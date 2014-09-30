@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DabichoQuiz</string>
+    <string name="true_button">CIERTO</string>
+    <string name="false_button">FALSO</string>
+    <string name="respuesta_incorrecta">INCORRECTO!!</string>
+    <string name="respuesta_correcta">CORRECTO!!</string>
+    <string name="next_button" >SIGUIENTE</string>
+    <string name="prev_button">ANTERIOR</string>
+    <!-- PREGUNTAS -->
+    <string name="question_oceans">El océano Pacífico es más grande que el océano Atlántico</string>
+    <string name="question_mideast">El canal de Suez conecta a l Mar Rojo con el Océano Atlántico</string>
+    <string name="question_africa">La fuente del rio Nilo está en Egipto</string>
+    <string name="question_americas">El río Amazona es el río más grande en América</string>
+    <string name="question_asia">El lago Baikal es el lago más viejo del mundo</string>
+    <string name="question_superman">La kriptonita verde fortalece a Superman</string>
+    <string name="question_gonzalo">Gonzalo cumple años el 2 de Octubre</string>
+    <string name="question_dalia">Dalia es una pendeja</string>
+    <string name="descripcion_anterior">Pregunta Anterior</string>
+    <string name="descripcion_siguiente">Pregunta Siguiente</string>
+
+    <string name="cheat_button">TRAMPA!!</string>
+    <string name="warning_text">¿Estás seguro que deseas hacer esto?</string>
+    <string name="show_answer_button">VER RESPUESTA</string>
+    <string name="judgment_toast">Hacer trampa está mal.</string>
+
+</resources>
