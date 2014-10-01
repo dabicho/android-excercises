@@ -7,8 +7,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.*;
-import android.support.v4.BuildConfig;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -147,7 +146,7 @@ public class FullscreenQuizActivity extends Activity {
     private void checkAnswer(boolean userPressedTrue) {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTrueQuestion();
 
-        int messageResId = 0;
+        int messageResId ;
 
         if (userPressedTrue == answerIsTrue) {
             if(mUserCheated)

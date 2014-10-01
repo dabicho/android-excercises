@@ -1,11 +1,13 @@
 package mx.org.dabicho.criminal;
 
-import android.app.Activity;
+
 import android.app.Fragment;
-import android.app.FragmentManager;
+
 import android.net.Uri;
-import android.os.Bundle;
+
 import android.util.Log;
+
+import java.util.UUID;
 
 /*
 Para soporte con versiones anteriores de android, en lugar de extender Activity debe extender
@@ -17,7 +19,9 @@ public class CriminalIntentActivity extends SingleFragmentActivity implements Cr
     @Override
     protected Fragment createFragment() {
         Log.d(TAG,"createFragment");
-        return new CrimeFragment();
+        UUID lCrimeId=(UUID)getIntent().getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
+        return CrimeFragment.newInstance(lCrimeId);
+
     }
 
 
