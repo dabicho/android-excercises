@@ -1,7 +1,7 @@
 package mx.org.dabicho.dabichoquiz.model;
 
 /**
- * Created by dabicho on 9/29/14.
+ * Clase para indicar las preguntas y respuestas correctas
  */
 public class TrueFalse
 {

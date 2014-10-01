@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 
 /**
- * Created by dabicho on 9/29/14.
+ * Activity que representa trampas en el quiz
  */
 public class CheatActivity extends Activity {
     public static final String EXTRA_ANSWER_IS_TRUE = "mx.org.dabichoquiz.isTrue";

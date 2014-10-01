@@ -5,7 +5,10 @@ import mx.org.dabicho.dabichoquiz.util.SystemUiHider;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.*;
+import android.support.v4.BuildConfig;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -176,6 +179,8 @@ public class FullscreenQuizActivity extends Activity {
     protected void onStart() {
         super.onStart();
         Log.d(TAG, " onStart() called");
+
+        Log.d(TAG, "BuildVersion: "+ Build.VERSION.SDK_INT);
     }
 
     @Override
@@ -211,7 +216,7 @@ public class FullscreenQuizActivity extends Activity {
     private void restoreState(Bundle inState) {
         if (inState != null) {
             mCurrentIndex = inState.getInt(CURRENT_INDEX_KEY, 0);
-            mUserCheated=inState.getBoolean(USER_CHEATED_KEY,false);
+            mUserCheated=inState.getBoolean(USER_CHEATED_KEY, false);
         }
     }
 
