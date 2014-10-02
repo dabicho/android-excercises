@@ -42,7 +42,10 @@ public class CrimeListFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         Crime c =  ((CrimeAdapter)getListAdapter()).getItem(position);
 
-        Intent i=new Intent(getActivity(),CriminalIntentActivity.class);
+        // Originalmente se mostraba CriminalIntentActivity
+        //Intent i=new Intent(getActivity(),CriminalIntentActivity.class);
+        // Se regresa un intent para cargar CrimePagerActivity
+        Intent i = new Intent(getActivity(), CrimePagerActivity.class);
         i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
         startActivity(i);
     }
@@ -67,7 +70,7 @@ public class CrimeListFragment extends ListFragment {
             TextView lTitleTextView=(TextView)convertView.findViewById(R.id.crime_list_item_titleTextView);
             lTitleTextView.setText(c.getTitle());
             TextView lDateTextView=(TextView)convertView.findViewById(R.id.crime_list_item_dateTextView);
-            lDateTextView.setText(DateFormat.format("EEEE, MMM d, yyyy",c.getDate()));
+            lDateTextView.setText(DateFormat.format("EEEE, MMM d, yyyy ",c.getDate())+"a las"+DateFormat.format(" HH:mm:ss",c.getDate()));
             CheckBox lSolvedCheckBox=(CheckBox)convertView.findViewById(R.id.crime_list_item_solvedCheckBox);
             lSolvedCheckBox.setChecked(c.isSolved());
 

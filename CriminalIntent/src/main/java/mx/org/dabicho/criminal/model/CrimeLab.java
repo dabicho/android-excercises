@@ -29,6 +29,11 @@ public class CrimeLab {
         }
     }
 
+    /**
+     *
+     * @param c
+     * @return La instancia del laboratorio de crímenes
+     */
     public static CrimeLab getInstance(Context c){
         if(sCrimeLab==null) {
             Log.d(TAG,"getInstance creando instancia");
@@ -41,6 +46,11 @@ public class CrimeLab {
         return mCrimes;
     }
 
+    /**
+     * Obtiene el crimen dado su id
+     * @param id id del crimen buscado
+     * @return un crimen con el id
+     */
     public Crime getCrime(UUID id) {
         for(Crime c: mCrimes){
             if(c.getId().equals(id))
