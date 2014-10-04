@@ -3,7 +3,7 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
              android:layout_height="match_parent">
-
+<!--
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -11,12 +11,16 @@
         android:contentDescription="@string/hellomoon_descripcion"
         android:scaleType="centerInside"
         android:src="@drawable/armstrong_on_moon"/>
+-->
     <SurfaceView
         android:id="@+id/hellomoon_videoSurfaceView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:visibility="visible"/>
+        android:layout_width="match_parent"
+        android:layout_height="600px"
+
+        android:layout_gravity="center"
+        android:layout_weight="0"
+        />
+
     <TableRow
         android:gravity="center|bottom"
         android:layout_weight="0">
