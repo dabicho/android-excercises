@@ -24,6 +24,11 @@ public class AudioPlayer {
         }
     }
 
+    /**
+     *
+     * @param c contexto de la actividad
+     * @return true si está reproduciendo
+     */
     public boolean play(Context c ){
 
         if(mMediaPlayer==null) {
@@ -49,6 +54,16 @@ public class AudioPlayer {
 
             mMediaPlayer.start();
             Log.d(TAG, "play play: "+mMediaPlayer.isPlaying());
+        return mMediaPlayer.isPlaying();
+    }
+
+    /**
+     *
+     * @return true if it is currently playing music
+     */
+    public boolean isPlaying(){
+        if(mMediaPlayer==null)
+            return false;
         return mMediaPlayer.isPlaying();
     }
 

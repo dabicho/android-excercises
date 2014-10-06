@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Hola Luna!!</string>
+    <string name="hello_world">Hola Mundo!</string>
+    <string name="action_settings">Configuración</string>
+    <string name="hellomoon_play">Tocar</string>
+    <string name="hellomoon_stop">Detener</string>
+    <string name="hellomoon_descripcion">Neil Armstrong descendiendo en la luna</string>
+    <string name="hellomoon_pause">Pausa</string>
+
+</resources>

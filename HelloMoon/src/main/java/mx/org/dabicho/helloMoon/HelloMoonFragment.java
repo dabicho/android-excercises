@@ -19,20 +19,37 @@ import android.widget.Button;
 public class HelloMoonFragment extends Fragment {
     private static final String TAG = "HelloMoonFragment";
     private Button mPlayButton;
+
     private Button mStopButton;
     private SurfaceHolder mSurfaceHolder;
     private SurfaceView mSurfaceView;
-    private VideoPlayer mPlayer = new VideoPlayer();
+    private AudioPlayer mPlayer = new AudioPlayer();
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Debido a la rotación, se destruye la instancia de el reproductor
+        // No es posible usando onSaveInstance por que el reproductor es destruido de igual forma
+        // aunque conserve en una variable la posición
+        // setRetainInstance permite que android conserve el fragmento sin destruirlo (junto con
+        // sus miembros) por lo que no se detiene la reproducición
+        // El fragment manager se encarga de devolver este mismo fragmento a su actividad
+        Log.d(TAG,"onCreate");
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View fragmentView = inflater.inflate(R.layout.fragment_hello_moon, container, false);
+        //Este fragmento de código es para VideoPlayer
+        /*
         mSurfaceView=((SurfaceView)
                 fragmentView.findViewById(R.id.hellomoon_videoSurfaceView));
         mSurfaceHolder=((SurfaceView)
                 fragmentView.findViewById(R.id.hellomoon_videoSurfaceView)).getHolder();
+
         mPlayer.setSurfaceHolder(mSurfaceHolder);
         mPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
             @Override
@@ -45,7 +62,7 @@ public class HelloMoonFragment extends Fragment {
             }
         });
         mSurfaceView.setVisibility(View.VISIBLE);
-
+        */
 
 
 
@@ -56,19 +73,33 @@ public class HelloMoonFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"onCreateView Activity: "+getActivity());
-                if (mPlayer.play(getActivity()))
+                //AudioPlayer requiere un contexto como parámetro
+                //mPlayer.play(getActivity) para configurar la superficie (Surface)
+                if (mPlayer.play(getActivity())) {
                     mPlayButton.setText(R.string.hellomoon_pause);
-                else
+
+                }
+                else {
                     mPlayButton.setText(R.string.hellomoon_play);
+
+                }
             }
         });
+
+
+        if(mPlayer.isPlaying())
+            mPlayButton.setText(R.string.hellomoon_pause);
+        else
+            mPlayButton.setText(R.string.hellomoon_play);
 
         mStopButton = (Button) fragmentView.findViewById(R.id.hellomoon_stopButton);
         mStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPlayer.stop();
+
                 mPlayButton.setText(R.string.hellomoon_play);
+
             }
         });
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -85,4 +116,6 @@ public class HelloMoonFragment extends Fragment {
         super.onDestroy();
         mPlayer.stop();
     }
+
+
 }
