@@ -85,4 +85,12 @@ public class CrimeLab {
         }
 
     }
+
+    /**
+     * Elimina el crimen si existe en el laboratorio
+     * @param c
+     */
+    public void deleteCrime(Crime c){
+        mCrimes.remove(c);
+    }
 }
