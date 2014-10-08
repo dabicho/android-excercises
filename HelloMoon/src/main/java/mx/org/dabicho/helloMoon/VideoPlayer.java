@@ -74,4 +74,9 @@ public class VideoPlayer {
     }
 
 
+    public boolean isPlaying() {
+        if (mMediaPlayer==null)
+            return false;
+        return mMediaPlayer.isPlaying();
+    }
 }

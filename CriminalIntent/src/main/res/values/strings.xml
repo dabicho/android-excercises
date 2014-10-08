@@ -17,4 +17,5 @@
     <string name="subtitle">Si ves algo, di algo.</string>
     <string name="delete_crime">Eliminar crimen</string>
     <string name="no_crimes">No existe ningún crimen</string>
+    <string name="take">Toma!</string>
 </resources>

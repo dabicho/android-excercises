@@ -1,15 +1,18 @@
 package mx.org.dabicho.criminal;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
+
+
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 /**
  * Clase que extiende de Activity y que inicializa para contener un fragmento
  */
-abstract public class SingleFragmentActivity extends Activity{
+abstract public class SingleSupportFragmentActivity extends FragmentActivity{
     private static final String TAG="SingleFragmentActivity";
 
     /**
@@ -24,7 +27,8 @@ abstract public class SingleFragmentActivity extends Activity{
 
         setContentView(R.layout.activity_fragment);
         Log.d(TAG,"onCreate");
-        FragmentManager fm = getFragmentManager();
+
+        FragmentManager fm = getSupportFragmentManager();
 
         Fragment lFragment=fm.findFragmentById(R.id.fragmentContainer);
 

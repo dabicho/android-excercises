@@ -4,10 +4,13 @@ import android.annotation.TargetApi;
 import android.app.ListActivity;
 import android.app.ListFragment;
 import android.content.Intent;
+import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -76,7 +80,71 @@ public class CrimeListFragment extends ListFragment {
         // EL método getListView regresa null hasta que se ejecuta onActivityCreated
         // Por lo quepara obtener el ListView, se busca por id, con id list
         ListView lListView = (ListView) v.findViewById(android.R.id.list);
-        registerForContextMenu(lListView);
+
+
+        // Para permitir selecciń múltiple. que está disponible en HoneyComb y posteriores
+        // únicamente
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            registerForContextMenu(lListView);
+        } else {
+            lListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+            lListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+                ArrayList<Crime> selectedCrimes=new ArrayList<Crime>();
+
+                @Override
+                public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                    Log.d(TAG,"onItemCheckedStateChanged: "+position+", "+id+", "+checked);
+                    CrimeAdapter adapter=(CrimeAdapter)getListAdapter();
+
+                    Crime c = (Crime)adapter.getItem(position);
+                    if(checked){
+
+                        selectedCrimes.add(c);
+                    }else {
+                        selectedCrimes.remove(c);
+                    }
+
+                }
+
+                @Override
+                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                    MenuInflater inflater = mode.getMenuInflater();
+                    inflater.inflate(R.menu.crime_list_item_context,menu);
+                    return true;
+                }
+
+                @Override
+                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                    return false;
+                }
+
+                @Override
+                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                    switch(item.getItemId()) {
+                        case R.id.menu_item_delete_crime:
+                            CrimeAdapter lAdapter=(CrimeAdapter)getListAdapter();
+                            CrimeLab lCrimeLab=CrimeLab.getInstance(getActivity());
+                            for (int i= lAdapter.getCount()-1; i>=0; i--) {
+                                if(getListView().isItemChecked(i))
+                                    lCrimeLab.deleteCrime(lAdapter.getItem(i));
+                            }
+                            mode.finish();;
+                            lAdapter.notifyDataSetChanged();;
+                            return true;
+                        default:
+                            return false;
+                    }
+
+                }
+
+                @Override
+                public void onDestroyActionMode(ActionMode mode) {
+
+                }
+            });
+        }
+
 
         return v;
 
@@ -109,9 +177,25 @@ public class CrimeListFragment extends ListFragment {
         ((CrimeAdapter) getListAdapter()).notifyDataSetChanged();
     }
 
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+    }
+
     private class CrimeAdapter extends ArrayAdapter<Crime> {
         public CrimeAdapter(ArrayList<Crime> crimes) {
             super(getActivity(), 0, crimes);
+            registerDataSetObserver(new DataSetObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    Log.d(TAG,"onChanged CrimeAdapter");
+                    CrimeLab.getInstance(getActivity()).saveCrimes();
+                }
+            });
         }
 
         @Override
@@ -129,6 +213,8 @@ public class CrimeListFragment extends ListFragment {
 
             return convertView;
         }
+
+
 
 
     }

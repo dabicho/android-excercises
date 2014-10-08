@@ -24,6 +24,7 @@ public class CrimeLab {
     private ArrayList<Crime> mCrimes;
     private static CrimeLab sCrimeLab;
     private Context mAppContext;
+    private boolean saved;
 
     private CrimeLab(Context appContext) {
         mAppContext = appContext;
@@ -32,6 +33,7 @@ public class CrimeLab {
 
         try{
             mCrimes=mSerializer.loadCrimes();
+            saved=true;
 
         } catch(IOException|JSONException e) {
             mCrimes=new ArrayList<Crime>();
@@ -72,12 +74,14 @@ public class CrimeLab {
 
     public void addCrime(Crime c) {
         mCrimes.add(c);
+        saved=false;
     }
 
     public boolean saveCrimes(){
         try {
             mSerializer.saveCrimes(mCrimes);
             Log.d(TAG, "saveCrimes crimes saved to file");
+            saved=true;
             return true;
         } catch(JSONException|IOException e){
             Log.e(TAG, "saveCrimes Error saving crimes: ",e);
@@ -92,5 +96,6 @@ public class CrimeLab {
      */
     public void deleteCrime(Crime c){
         mCrimes.remove(c);
+        saved=false;
     }
 }

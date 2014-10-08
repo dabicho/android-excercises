@@ -3,6 +3,9 @@ package mx.org.dabicho.criminal;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +25,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 
 import java.lang.annotation.Target;
@@ -57,6 +61,7 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
+    private ImageButton mPhotoButton;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -179,6 +184,22 @@ public class CrimeFragment extends Fragment {
                 mCrime.setSolved(isChecked);
             }
         });
+
+        mPhotoButton=(ImageButton)v.findViewById(R.id.crime_imageButton);
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getActivity(),CrimeCameraActivity.class);
+
+                startActivity(i);
+            }
+        });
+
+        PackageManager pm=getActivity().getPackageManager();
+        boolean hasACamera=pm.hasSystemFeature(PackageManager.FEATURE_CAMERA) || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT) || (Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD && Camera.getNumberOfCameras()>0);
+        if(!hasACamera) {
+            mPhotoButton.setEnabled(false);
+        }
 
         return v;
     }

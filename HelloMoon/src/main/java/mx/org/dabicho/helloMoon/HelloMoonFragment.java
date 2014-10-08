@@ -23,7 +23,7 @@ public class HelloMoonFragment extends Fragment {
     private Button mStopButton;
     private SurfaceHolder mSurfaceHolder;
     private SurfaceView mSurfaceView;
-    private AudioPlayer mPlayer = new AudioPlayer();
+    private VideoPlayer mPlayer = new VideoPlayer();
 
 
     @Override
@@ -44,7 +44,7 @@ public class HelloMoonFragment extends Fragment {
 
         View fragmentView = inflater.inflate(R.layout.fragment_hello_moon, container, false);
         //Este fragmento de código es para VideoPlayer
-        /*
+
         mSurfaceView=((SurfaceView)
                 fragmentView.findViewById(R.id.hellomoon_videoSurfaceView));
         mSurfaceHolder=((SurfaceView)
@@ -62,7 +62,7 @@ public class HelloMoonFragment extends Fragment {
             }
         });
         mSurfaceView.setVisibility(View.VISIBLE);
-        */
+        //Fin para video
 
 
 
