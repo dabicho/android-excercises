@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.media.Image;
 import android.net.Uri;
@@ -26,14 +27,17 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 
 import java.lang.annotation.Target;
 import java.util.Date;
 import java.util.UUID;
 
+import mx.org.dabicho.criminal.api.PictureUtils;
 import mx.org.dabicho.criminal.model.Crime;
 import mx.org.dabicho.criminal.model.CrimeLab;
+import mx.org.dabicho.criminal.model.Photo;
 
 
 /**
@@ -54,14 +58,17 @@ public class CrimeFragment extends Fragment {
     public static final String EXTRA_CRIME_ID = "mx.org.dabicho.criminal.crime_id";
     private static final String DIALOG_DATE = "date";
     private static final String DIALOG_TIME = "time";
+    private static final String DIALOG_IMAGE="image";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
+    private static final int REQUEST_PHOTO=2;
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
     private ImageButton mPhotoButton;
+    private ImageView mPhotoThumbnailView;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -191,9 +198,12 @@ public class CrimeFragment extends Fragment {
             public void onClick(View v) {
                 Intent i = new Intent(getActivity(),CrimeCameraActivity.class);
 
-                startActivity(i);
+                startActivityForResult(i,REQUEST_PHOTO);
+
             }
         });
+
+        mPhotoThumbnailView=(ImageView)v.findViewById(R.id.crime_imageView);
 
         PackageManager pm=getActivity().getPackageManager();
         boolean hasACamera=pm.hasSystemFeature(PackageManager.FEATURE_CAMERA) || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT) || (Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD && Camera.getNumberOfCameras()>0);
@@ -201,7 +211,32 @@ public class CrimeFragment extends Fragment {
             mPhotoButton.setEnabled(false);
         }
 
+        mPhotoThumbnailView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Photo lPhoto=mCrime.getPhoto();
+                if(lPhoto==null)
+                    return;
+                FragmentManager fm=getActivity().getSupportFragmentManager();
+
+                String path=getActivity().getFileStreamPath(lPhoto.getFilename()).getAbsolutePath();
+                ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
+            }
+        });
+
         return v;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        showPhoto();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        PictureUtils.cleanImageView(mPhotoThumbnailView);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -242,7 +277,16 @@ public class CrimeFragment extends Fragment {
             mCrime.setDate(lDate);
             mDateButton.setText(updateDate());
             mTimeButton.setText(updateTime());
+        } else if (requestCode==REQUEST_PHOTO) {
+            String filename=data.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
+            if(filename!=null){
+                Photo lPhoto=new Photo(filename);
+                mCrime.setPhoto(lPhoto);
+                Log.i(TAG, "Crime: "+mCrime.getTitle()+" has a photo");
+                showPhoto();
+            }
         }
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -272,6 +316,8 @@ public class CrimeFragment extends Fragment {
         super.onPause();
         CrimeLab.getInstance(getActivity()).saveCrimes();
     }
+
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -303,5 +349,14 @@ public class CrimeFragment extends Fragment {
         return DateFormat.format("HH:mm:ss", mCrime.getDate()).toString();
     }
 
+    private void showPhoto(){
+        Photo p = mCrime.getPhoto();
+        BitmapDrawable b = null;
+        if(p!=null){
+            String path=getActivity().getFileStreamPath(p.getFilename()).getAbsolutePath();
+            b= PictureUtils.getScaledDrawable(getActivity(),path);
+        }
+        mPhotoThumbnailView.setImageDrawable(b);
+    }
 
 }

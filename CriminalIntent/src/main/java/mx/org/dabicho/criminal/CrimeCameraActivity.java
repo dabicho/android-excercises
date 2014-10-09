@@ -20,7 +20,10 @@ public class CrimeCameraActivity extends SingleFragmentActivity {
         // por lo que es necesario definir onCreate aquí y no se puede definir en el fragmento
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         super.onCreate(savedInstanceState);
 
     }
+
+
 }
