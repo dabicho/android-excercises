@@ -1,13 +1,14 @@
 package mx.org.dabicho.criminal;
 
 import android.annotation.TargetApi;
-import android.app.ListActivity;
+
 import android.app.ListFragment;
 import android.content.Intent;
 import android.database.DataSetObserver;
-import android.graphics.Color;
+
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.ActionMode;
@@ -60,7 +61,7 @@ public class CrimeListFragment extends ListFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v;
         //v = super.onCreateView(inflater, container, savedInstanceState);
@@ -97,7 +98,7 @@ public class CrimeListFragment extends ListFragment {
                     Log.d(TAG,"onItemCheckedStateChanged: "+position+", "+id+", "+checked);
                     CrimeAdapter adapter=(CrimeAdapter)getListAdapter();
 
-                    Crime c = (Crime)adapter.getItem(position);
+                    Crime c = adapter.getItem(position);
                     if(checked){
 
                         selectedCrimes.add(c);
@@ -129,8 +130,8 @@ public class CrimeListFragment extends ListFragment {
                                 if(getListView().isItemChecked(i))
                                     lCrimeLab.deleteCrime(lAdapter.getItem(i));
                             }
-                            mode.finish();;
-                            lAdapter.notifyDataSetChanged();;
+                            mode.finish();
+                            lAdapter.notifyDataSetChanged();
                             return true;
                         default:
                             return false;
