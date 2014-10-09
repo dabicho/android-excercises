@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +18,13 @@ import mx.org.dabicho.criminal.api.PictureUtils;
  * Fragmento de diálogo para mostrar una imágen
  */
 public class ImageFragment extends DialogFragment {
-
+    private static final String TAG="DialogFragment";
     private ImageView mImageView;
 
     public static final String EXTRA_IMAGE_PATH="mx.org.dabicho.criminal.image_path";
 
     public static ImageFragment newInstance(String path) {
+
         Bundle args=new Bundle();
         args.putSerializable(EXTRA_IMAGE_PATH,path);
         ImageFragment lFragment=new ImageFragment();

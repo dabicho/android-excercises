@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_item_delete_crime"
-          android:icon="@android:drawable/ic_menu_delete"
-          android:title="@string/delete_crime"/>
+    <item
+        android:id="@+id/menu_item_delete_crime"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete_crime"/>
+    <item
+        android:id="@+id/menu_item_delete_crime_photo"
+        android:icon="@android:drawable/ic_input_delete"
+        android:title="Eliminar foto"/>
+    <item
+        android:id="@+id/menu_item_solve_crime"
+        android:icon="@android:drawable/checkbox_on_background"
+        android:title="Marcar resuelto"/>
+    <item
+        android:id="@+id/menu_item_unsolve_crime"
+        android:icon="@android:drawable/checkbox_off_background"
+        android:title="Desmarcar resuelto"/>
 </menu>

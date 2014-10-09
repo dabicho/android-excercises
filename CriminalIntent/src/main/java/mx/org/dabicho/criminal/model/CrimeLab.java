@@ -96,6 +96,8 @@ public class CrimeLab {
      */
     public void deleteCrime(Crime c){
         mCrimes.remove(c);
+        if(mAppContext.getFileStreamPath(c.getPhoto().getFilename()).exists())
+            mAppContext.getFileStreamPath(c.getPhoto().getFilename()).delete();
         saved=false;
     }
 }

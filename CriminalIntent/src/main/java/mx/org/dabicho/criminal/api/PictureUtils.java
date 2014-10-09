@@ -81,15 +81,16 @@ public class PictureUtils {
                 default:
 
             }
-            Log.d(TAG, "ORIENTACION: " + exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1));
+            Log.d(TAG, "ORIENTATION: " + exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1));
         } catch (IOException e) {
             Log.e(TAG, "exif error", e);
         }
 
 
-        lBitmap=Bitmap.createBitmap(lBitmap,0,0,lBitmap.getWidth(),lBitmap.getHeight(),lMatrix,true);
+        Bitmap resultBitmap=Bitmap.createBitmap(lBitmap,0,0,lBitmap.getWidth(),lBitmap.getHeight(),lMatrix,true);
+        lBitmap.recycle();
 
-        return new BitmapDrawable(a.getResources(), lBitmap);
+        return new BitmapDrawable(a.getResources(), resultBitmap);
     }
 
     /**
