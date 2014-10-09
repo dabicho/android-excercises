@@ -11,15 +11,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.OrientationEventListener;
-import android.view.Surface;
+
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+
 import android.widget.Button;
 
 import java.io.FileOutputStream;
@@ -27,7 +26,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import mx.org.dabicho.criminal.api.Globals;
+import mx.org.dabicho.criminal.api.CameraUtils;
+
 
 /**
  * Fragmento para dar soporte a la cámara
@@ -42,7 +42,7 @@ public class CrimeCameraFragment extends Fragment {
 
     private SurfaceView mSurfaceView;
 
-    private OrientationEventListener mOrientationEventListener;
+
 
 
     private Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback() {
@@ -112,22 +112,10 @@ public class CrimeCameraFragment extends Fragment {
                     Log.d(TAG, "OrientacionCameraInfo Front: " + lCameraInfo.orientation);
                     Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, lCameraInfo);
                     Log.d(TAG, "OrientacionCameraInfo Back: " + lCameraInfo.orientation);
+
                     int rotacion = 0;
-                    switch (getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
-                        case Surface.ROTATION_0:
-                            rotacion = 0;
-                            break;
-                        case Surface.ROTATION_180:
-                            rotacion = 180;
-                            break;
-                        case Surface.ROTATION_270:
-                            rotacion = 270;
-                            break;
-                        case Surface.ROTATION_90:
-                            rotacion = 90;
-                            break;
-                        default:
-                    }
+                    rotacion=CameraUtils.getRotation();
+
                     Log.d(TAG, "Rotacion: " + rotacion);
                     Camera.Parameters lParameters = mCamera.getParameters();
                     lParameters.setRotation(rotacion);
@@ -161,64 +149,13 @@ public class CrimeCameraFragment extends Fragment {
                 if (mCamera == null)
                     return;
                 mCamera.stopPreview();
-                //TODO put this somewhere else where it is loaded at the start of the application
-                if (Globals.getNaturalOrientation() == null) {
-                    Globals.setNaturalOrientation(getDeviceDefaultOrientation());
-                }
-
-                int lRotation=0;
-                switch (Globals.getNaturalOrientation()) {
-                    case Configuration.ORIENTATION_LANDSCAPE:
-                        break;
-                    case Configuration.ORIENTATION_PORTRAIT:
-
-                        Camera.CameraInfo ci=new Camera.CameraInfo();
-                        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, ci);
-                        lRotation=ci.orientation;
-                        Log.d(TAG,"Orientacion Portrait: Rotacion"+lRotation);
-                        break;
-                }
 
                 Camera.Parameters lParameters = mCamera.getParameters();
-                Camera.Size s;
-                if(getActivity().getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
-                    s = getBestSupportedSize(lParameters.getSupportedPreviewSizes(), width, height);
-                else
-                    s = getBestSupportedSize(lParameters.getSupportedPreviewSizes(), height, width);
+                Camera.Size s=getBestSupportedSize(lParameters.getSupportedPreviewSizes(), width, height);
                 lParameters.setPreviewSize(s.width, s.height);
                 mCamera.setParameters(lParameters);
-                if(getActivity().getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
-                    s = getBestSupportedSize(lParameters.getSupportedPictureSizes(), width, height);
-                else
-                    s = getBestSupportedSize(lParameters.getSupportedPictureSizes(), height, width);
+                s = getBestSupportedSize(lParameters.getSupportedPictureSizes(), width, height);
                 lParameters.setPictureSize(s.width, s.height);
-                Log.d(TAG, "Selected Size: " + lParameters.getPreviewSize().width + " " + lParameters.getPreviewSize().height);
-                mCamera.setParameters(lParameters);
-
-
-                switch (getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
-                    case Surface.ROTATION_0:
-
-
-                        break;
-                    case Surface.ROTATION_90:
-                        // this mean the device was rotated 90° counter-clock wise,
-                        // so it follows that rotation is 90 - rotation
-                        lRotation = 90-lRotation;
-                        break;
-                    case Surface.ROTATION_180:
-
-                        lRotation = 180-lRotation;
-                        break;
-                    case Surface.ROTATION_270:
-                        lRotation=270-lRotation;
-                        break;
-                }
-
-                mCamera.setDisplayOrientation(lRotation);
-
-
-
                 mCamera.setParameters(lParameters);
                 try {
                     mCamera.startPreview();
@@ -241,18 +178,29 @@ public class CrimeCameraFragment extends Fragment {
     }
 
 
-
+    /**
+     * Opens a backFacing camera and enables the OrientationEventListener from CameraUtils to keep
+     * track of the rotation
+     */
     @Override
     public void onResume() {
         super.onResume();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-            mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+            int cameraId=CameraUtils.getFirstBackFacingCameraID();
+            mCamera = Camera.open(cameraId);
+            CameraUtils.setCameraId(cameraId);
 
+            CameraUtils.enableOrientationEventListener();
         } else {
             mCamera = Camera.open();
+
         }
     }
 
+    /**
+     * Releases the camera and disables the orientationEventListener from CameraUtils
+     * when the fragment is paused
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -260,8 +208,17 @@ public class CrimeCameraFragment extends Fragment {
             mCamera.release();
             mCamera = null;
         }
+        CameraUtils.disableOrientationEventListener();
     }
 
+    /**
+     * Gets the best supported size that resembles the aspect ratio with a tolerance of 0.1
+     * If none is found, it returns the size with the closest height to the target
+     * @param sizes the sizes from wich one will be selected
+     * @param width the target width to match
+     * @param height the target height to match
+     * @return the selected size
+     */
     private Camera.Size getBestSupportedSize(List<Camera.Size> sizes, int width, int height) {
         final double ASPECT_TOLERANCE = 0.1;
         double targetRatio=(double)height / (double)width;
@@ -295,25 +252,6 @@ public class CrimeCameraFragment extends Fragment {
         return optimalSize;
     }
 
-    /**
-     * @return El tipo de orientación natural del dispositivo
-     */
-    private int getDeviceDefaultOrientation() {
 
-        WindowManager windowManager = getActivity().getWindowManager();
-
-        Configuration config = getActivity().getResources().getConfiguration();
-
-        int rotation = windowManager.getDefaultDisplay().getRotation();
-
-        if (((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) &&
-                config.orientation == Configuration.ORIENTATION_LANDSCAPE)
-                || ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) &&
-                config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
-            return Configuration.ORIENTATION_LANDSCAPE;
-        } else {
-            return Configuration.ORIENTATION_PORTRAIT;
-        }
-    }
 
 }
