@@ -11,19 +11,22 @@
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
         android:orientation="horizontal">
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="4dp"
             android:orientation="vertical">
+
             <ImageView
                 android:id="@+id/crime_imageView"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:scaleType="centerInside"
                 android:background="@android:color/darker_gray"
                 android:cropToPadding="true"
-                android:longClickable="true"/>
+                android:longClickable="true"
+                android:scaleType="centerInside"/>
+
             <ImageButton
                 android:id="@+id/crime_imageButton"
                 android:layout_width="match_parent"
@@ -36,6 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
+
             <TextView
                 style="?android:listSeparatorTextViewStyle"
                 android:layout_width="match_parent"
@@ -50,7 +54,6 @@
                 />
         </LinearLayout>
     </LinearLayout>
-
 
 
     <TextView
@@ -83,6 +86,19 @@
         android:layout_marginRight="16dp"
         android:text="@string/crime_solved_label"
         />
-
+    <Button
+        android:id="@+id/crime_suspectButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/crime_suspect_text"/>
+    <Button
+        android:id="@+id/crime_reportButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/crime_report_text"/>
 
 </LinearLayout>

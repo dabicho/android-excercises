@@ -3,6 +3,8 @@
     package="mx.org.dabicho.criminal"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <!-- aplicación que pueden instalar solamente los dispositivos con cámara-->
     <uses-feature android:name="android.hardware.camera"/>
     <application

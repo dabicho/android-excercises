@@ -18,4 +18,13 @@
     <string name="delete_crime">Eliminar crimen</string>
     <string name="no_crimes">No existe ningún crimen</string>
     <string name="take">Toma!</string>
+    <string name="crime_suspect_text">Seleccionar sospechos</string>
+    <string name="crime_report_text">Enviar reporte</string>
+    <string name="crime_report">%1$s! El crimen fué descubierto el %2$s. %3$s. %4$s</string>
+    <string name="crime_report_solved">Caso cerrado</string>
+    <string name="crime_report_unsolved">Caso (re-)abierto</string>
+    <string name="crime_report_no_suspects">No hay sospechosos</string>
+    <string name="crime_report_suspect">Se sospecha de %s</string>
+    <string name="crime_report_subject">CriminalIntent Crime Report</string>
+    <string name="send_report">Enviar reporte via</string>
 </resources>
