@@ -22,7 +22,8 @@
                 android:layout_height="80dp"
                 android:scaleType="centerInside"
                 android:background="@android:color/darker_gray"
-                android:cropToPadding="true"/>
+                android:cropToPadding="true"
+                android:longClickable="true"/>
             <ImageButton
                 android:id="@+id/crime_imageButton"
                 android:layout_width="match_parent"

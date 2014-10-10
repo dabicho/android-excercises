@@ -40,13 +40,15 @@ public class CrimeListFragment extends ListFragment {
     private final static String TAG = "CrimeListFragment";
     private ArrayList<Crime> mCrimes;
 
+    private ArrayList<Crime> selectedCrimes=new ArrayList<>();
+
     private boolean mSubtitleVisible;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "onCreate");
+
         getActivity().setTitle(R.string.crimes_title);
         mCrimes = CrimeLab.getInstance(getActivity()).getCrimes();
 
@@ -91,11 +93,11 @@ public class CrimeListFragment extends ListFragment {
             lListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
             lListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
-                ArrayList<Crime> selectedCrimes=new ArrayList<Crime>();
+
 
                 @Override
                 public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                    Log.d(TAG,"onItemCheckedStateChanged: "+position+", "+id+", "+checked);
+
                     CrimeAdapter adapter=(CrimeAdapter)getListAdapter();
 
                     Crime c = adapter.getItem(position);
@@ -103,6 +105,7 @@ public class CrimeListFragment extends ListFragment {
 
                         selectedCrimes.add(c);
                     }else {
+
                         selectedCrimes.remove(c);
                     }
 
@@ -117,6 +120,7 @@ public class CrimeListFragment extends ListFragment {
 
                 @Override
                 public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+
                     return false;
                 }
 
@@ -132,7 +136,33 @@ public class CrimeListFragment extends ListFragment {
                             }
                             mode.finish();
                             lAdapter.notifyDataSetChanged();
+
                             return true;
+                        case R.id.menu_item_delete_crime_photo:
+                            for(Crime c:selectedCrimes) {
+                                CrimeLab.getInstance(getActivity()).deleteCrimePhoto(c);
+                            }
+
+                            return true;
+
+                        case R.id.menu_item_solve_crime:
+                            for(Crime c:selectedCrimes) {
+                                c.setSolved(true);
+                            }
+
+                            lAdapter=(CrimeAdapter)getListAdapter();
+                            lAdapter.notifyDataSetChanged();
+                            return true;
+
+                        case R.id.menu_item_unsolve_crime:
+                            for(Crime c:selectedCrimes) {
+                                c.setSolved(false);
+                            }
+
+                            lAdapter=(CrimeAdapter)getListAdapter();
+                            lAdapter.notifyDataSetChanged();
+                            return true;
+
                         default:
                             return false;
                     }
@@ -141,7 +171,7 @@ public class CrimeListFragment extends ListFragment {
 
                 @Override
                 public void onDestroyActionMode(ActionMode mode) {
-
+                    selectedCrimes.clear();
                 }
             });
         }
@@ -193,7 +223,7 @@ public class CrimeListFragment extends ListFragment {
                 @Override
                 public void onChanged() {
                     super.onChanged();
-                    Log.d(TAG,"onChanged CrimeAdapter");
+
                     CrimeLab.getInstance(getActivity()).saveCrimes();
                 }
             });

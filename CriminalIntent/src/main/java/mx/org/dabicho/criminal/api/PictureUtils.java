@@ -81,7 +81,7 @@ public class PictureUtils {
                 default:
 
             }
-            Log.d(TAG, "ORIENTATION: " + exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1));
+
         } catch (IOException e) {
             Log.e(TAG, "exif error", e);
         }

@@ -105,18 +105,8 @@ public class CrimeCameraFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mCamera != null) {
-                    Log.d(TAG, "RotacionDisplay: " + getActivity().getWindowManager().getDefaultDisplay().getRotation());
-                    Log.d(TAG, "Orientación: " + getActivity().getResources().getConfiguration().orientation);
-                    Camera.CameraInfo lCameraInfo = new Camera.CameraInfo();
-                    Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_FRONT, lCameraInfo);
-                    Log.d(TAG, "OrientacionCameraInfo Front: " + lCameraInfo.orientation);
-                    Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, lCameraInfo);
-                    Log.d(TAG, "OrientacionCameraInfo Back: " + lCameraInfo.orientation);
-
                     int rotacion = 0;
                     rotacion=CameraUtils.getRotation();
-
-                    Log.d(TAG, "Rotacion: " + rotacion);
                     Camera.Parameters lParameters = mCamera.getParameters();
                     lParameters.setRotation(rotacion);
                     mCamera.setParameters(lParameters);

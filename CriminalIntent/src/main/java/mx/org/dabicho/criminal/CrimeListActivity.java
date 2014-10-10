@@ -12,7 +12,7 @@ private static final String TAG="SingleFragmentActivity";
 
     @Override
     protected Fragment createFragment() {
-        Log.d(TAG,"createFragment");
+        
         return new CrimeListFragment();
     }
 }

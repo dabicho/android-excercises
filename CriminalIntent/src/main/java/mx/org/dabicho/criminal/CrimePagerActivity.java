@@ -59,7 +59,7 @@ public class CrimePagerActivity extends FragmentActivity implements CrimeFragmen
             @Override
             public void onPageSelected(int i) {
                 Crime lCrime=mCrimes.get(i);
-                Log.d(TAG, "onPageSelected " + i);
+
                 if(lCrime.getTitle()!=null) {
 
                     setTitle(getString(R.string.crime_title_part)+lCrime.getTitle());

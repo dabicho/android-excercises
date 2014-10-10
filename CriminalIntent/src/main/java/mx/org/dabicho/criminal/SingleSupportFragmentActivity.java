@@ -26,7 +26,7 @@ abstract public class SingleSupportFragmentActivity extends FragmentActivity{
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fragment);
-        Log.d(TAG,"onCreate");
+
 
         FragmentManager fm = getSupportFragmentManager();
 

@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -48,7 +49,7 @@ public class CrimeLab {
      */
     public static CrimeLab getInstance(Context c) {
         if (sCrimeLab == null) {
-            Log.d(TAG, "getInstance creando instancia");
+
             sCrimeLab = new CrimeLab(c.getApplicationContext());
         }
         return sCrimeLab;
@@ -80,7 +81,7 @@ public class CrimeLab {
     public boolean saveCrimes(){
         try {
             mSerializer.saveCrimes(mCrimes);
-            Log.d(TAG, "saveCrimes crimes saved to file");
+
             saved=true;
             return true;
         } catch(JSONException|IOException e){
@@ -96,8 +97,24 @@ public class CrimeLab {
      */
     public void deleteCrime(Crime c){
         mCrimes.remove(c);
-        if(mAppContext.getFileStreamPath(c.getPhoto().getFilename()).exists())
-            mAppContext.getFileStreamPath(c.getPhoto().getFilename()).delete();
+        deleteCrimePhoto(c);
+        // No se pone saved en false, por que ya lo hizo deleteCrimePhoto
+    }
+
+    /**
+     * Removes the photo from a crime and deletes its file
+     * @param c
+     */
+    public void deleteCrimePhoto(Crime c){
+        if(c.getPhoto()!=null) {
+            File photoFile = mAppContext.getFileStreamPath(c.getPhoto().getFilename());
+            if (photoFile.exists())
+                if (photoFile.delete())
+                    c.setPhoto(null);
+                else
+                    Log.e(TAG, "deleteCrimePhoto(): Crime Photo could not be deleted");
+        }
         saved=false;
+
     }
 }
