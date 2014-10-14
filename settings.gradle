@@ -1,1 +1,1 @@
-include ':app', ':CriminalIntent', ':HelloMoon'
+include ':app', ':CriminalIntent', ':HelloMoon', ':myLauncher'
