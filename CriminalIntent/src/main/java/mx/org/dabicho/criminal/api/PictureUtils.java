@@ -30,6 +30,8 @@ public class PictureUtils {
         float destWidth = lDisplay.getWidth();
         float destHeight = lDisplay.getHeight();
 
+
+        Log.d(TAG,"getScaledDrawable");
         BitmapFactory.Options lOptions = new BitmapFactory.Options();
 
         lOptions.inJustDecodeBounds = true;
@@ -88,7 +90,8 @@ public class PictureUtils {
 
 
         Bitmap resultBitmap=Bitmap.createBitmap(lBitmap,0,0,lBitmap.getWidth(),lBitmap.getHeight(),lMatrix,true);
-        lBitmap.recycle();
+        //lBitmap.recycle();
+        Log.d(TAG,"Return getScaledDrawable");
 
         return new BitmapDrawable(a.getResources(), resultBitmap);
     }

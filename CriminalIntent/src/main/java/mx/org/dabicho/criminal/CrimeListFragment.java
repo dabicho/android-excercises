@@ -2,13 +2,15 @@ package mx.org.dabicho.criminal;
 
 import android.annotation.TargetApi;
 
-import android.app.ListFragment;
+import android.app.Activity;
+
 import android.content.Intent;
 import android.database.DataSetObserver;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ListFragment;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.ActionMode;
@@ -35,10 +37,13 @@ import mx.org.dabicho.criminal.model.CrimeLab;
 
 /**
  * Fragmento que maneja la lista de crímenes
+ * La actividad que hospede a este fragmento debe implementar la interfaz @link{Callbacks}
  */
 public class CrimeListFragment extends ListFragment {
     private final static String TAG = "CrimeListFragment";
     private ArrayList<Crime> mCrimes;
+
+    private Callbacks mCallbacks;
 
     private ArrayList<Crime> selectedCrimes=new ArrayList<>();
 
@@ -197,9 +202,7 @@ public class CrimeListFragment extends ListFragment {
         // Originalmente se mostraba CriminalIntentActivity
         //Intent i=new Intent(getActivity(),CriminalIntentActivity.class);
         // Se regresa un intent para cargar CrimePagerActivity
-        Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-        i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
-        startActivity(i);
+        mCallbacks.onCrimeSelected(c);
     }
 
     @Override
@@ -216,6 +219,21 @@ public class CrimeListFragment extends ListFragment {
 
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallbacks=(Callbacks)getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks=null;
+    }
+
+    /**
+     * ArrayAdapter para uso de la acitividad de crímenes utilizando CrimeLab como fuente de datos
+     */
     private class CrimeAdapter extends ArrayAdapter<Crime> {
         public CrimeAdapter(ArrayList<Crime> crimes) {
             super(getActivity(), 0, crimes);
@@ -319,8 +337,15 @@ public class CrimeListFragment extends ListFragment {
     private void creaCrimen() {
         Crime c = new Crime();
         CrimeLab.getInstance(getActivity()).addCrime(c);
-        Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-        i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
-        startActivityForResult(i, 0);
+        ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
+        mCallbacks.onCrimeSelected(c);
+    }
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
+    public void updateUI() {
+        ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
     }
 }

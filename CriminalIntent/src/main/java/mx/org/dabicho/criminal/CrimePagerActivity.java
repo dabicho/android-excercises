@@ -22,7 +22,7 @@ import mx.org.dabicho.criminal.model.CrimeLab;
 /*
 Utilizamos FragmentActivity de la librería de support por que ViewPager lo requiere
  */
-public class CrimePagerActivity extends FragmentActivity implements CrimeFragment.OnFragmentInteractionListener{
+public class CrimePagerActivity extends FragmentActivity implements CrimeFragment.OnFragmentInteractionListener, CrimeFragment.Callbacks{
     private final static String TAG="CrimePagerActivity";
     private ViewPager mViewPager;
     private ArrayList<Crime> mCrimes;
@@ -88,5 +88,10 @@ public class CrimePagerActivity extends FragmentActivity implements CrimeFragmen
     @Override
     public void onFragmentInteraction(Uri uri) {
         // No hace nada actualmente
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+        // No se hace nada pues el pager se carga únicamente en teléfonos
     }
 }

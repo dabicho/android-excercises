@@ -15,17 +15,28 @@ import android.util.Log;
 abstract public class SingleSupportFragmentActivity extends FragmentActivity{
     private static final String TAG="SingleFragmentActivity";
 
+
+
     /**
      *
      * @return El fragmento que hospeda esta actividad
      */
     protected abstract Fragment createFragment();
 
+    /**
+     * Método para ser sobreescrito por clases herederas para devolver el id del resource que va
+     * a ser expuesto en la interfaz
+     * @return
+     */
+    protected int getLayoutResId(){
+        return R.layout.activity_fragment;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_fragment);
+        setContentView(getLayoutResId());
 
 
         FragmentManager fm = getSupportFragmentManager();

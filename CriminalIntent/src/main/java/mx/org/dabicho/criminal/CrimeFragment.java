@@ -73,6 +73,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_PHOTO = 2;
     private static final int REQUEST_CONTACT = 3;
+    private Callbacks mCallbacks;
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
@@ -118,7 +119,7 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d(TAG,"onCreate");
 
         // Obtener el crimen seleccionado utilizando los extra del activity
         /*
@@ -137,6 +138,7 @@ public class CrimeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG,"onCreateView");
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
@@ -161,6 +163,8 @@ public class CrimeFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                 mCrime.setTitle(s.toString());
+                mCallbacks.onCrimeUpdated(mCrime);
+                getActivity().setTitle(mCrime.getTitle());
             }
 
             @Override
@@ -202,6 +206,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                mCallbacks.onCrimeUpdated(mCrime);
             }
         });
 
@@ -272,19 +277,26 @@ public class CrimeFragment extends Fragment {
             });
         if (mCrime.getSuspect() != null)
             suspectButton.setText(mCrime.getSuspect());
+        Log.d(TAG,"return onCreateView");
         return v;
+
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG,"onStart call showPhoto");
         showPhoto();
+        Log.d(TAG,"onStart return showPhoto");
     }
 
     @Override
     public void onStop() {
+        Log.d(TAG,"onStop");
         super.onStop();
         PictureUtils.cleanImageView(mPhotoThumbnailView);
+        Log.d(TAG,"return onStop");
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -297,18 +309,24 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        Log.d(TAG,"onAttach");
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+        mCallbacks = (Callbacks) activity;
+        Log.d(TAG,"return onAttach");
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        Log.d(TAG,"onDetach");
         mListener = null;
+        mCallbacks = null;
+        Log.d(TAG,"return onDetach");
     }
 
     @Override
@@ -340,11 +358,13 @@ public class CrimeFragment extends Fragment {
             mCrime.setDate(lDate);
             mDateButton.setText(updateDate());
             mTimeButton.setText(updateTime());
+            mCallbacks.onCrimeUpdated(mCrime);
         } else if (requestCode == REQUEST_TIME) {
             Date lDate = (Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
             mCrime.setDate(lDate);
             mDateButton.setText(updateDate());
             mTimeButton.setText(updateTime());
+            mCallbacks.onCrimeUpdated(mCrime);
         } else if (requestCode == REQUEST_PHOTO) {
             String filename = data.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
             if (filename != null) {
@@ -352,40 +372,45 @@ public class CrimeFragment extends Fragment {
                 CrimeLab.getInstance(getActivity()).deleteCrimePhoto(mCrime);
                 mCrime.setPhoto(lPhoto);
                 Log.i(TAG, "Crime: " + mCrime.getTitle() + " has a photo");
+                Log.d(TAG,"onActivityResult call showPhoto");
                 showPhoto();
+                Log.d(TAG,"onActivityResult return showPhoto");
             }
-        } else {
-            if (requestCode == REQUEST_CONTACT) {
-                Uri contactUri = data.getData();
+            Log.d(TAG,"onActivityResult update crime photo");
+            mCallbacks.onCrimeUpdated(mCrime);
+            Log.d(TAG,"onActivityResult update crime photo 2");
+        } else if (requestCode == REQUEST_CONTACT) {
+            Uri contactUri = data.getData();
 
-                String[] queryFields = new String[]{
-                        ContactsContract.Contacts.DISPLAY_NAME,
-                        ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
+            String[] queryFields = new String[]{
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
 
-                };
-                Cursor c = getActivity().getContentResolver().query(contactUri, queryFields, null, null, null);
-                if (c.getCount() == 0) {
-                    c.close();
-                    return;
-                }
-                c.moveToFirst();
-                long tid = c.getLong(1);
-                String suspect = c.getString(0);
-                mCrime.setSuspect(suspect);
-                suspectButton.setText(suspect);
-                String photoUri = c.getString(1);
+            };
+            Cursor c = getActivity().getContentResolver().query(contactUri, queryFields, null, null, null);
+            if (c.getCount() == 0) {
                 c.close();
-                try {
-                    InputStream is = getActivity().getContentResolver().openInputStream(Uri.parse(photoUri));
-                    Bitmap b = BitmapFactory.decodeStream(is);
-                    BitmapDrawable bd = new BitmapDrawable(getActivity().getResources(), b);
-                    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.JELLY_BEAN)
-                        suspectButton.setBackground(bd);
-                } catch (FileNotFoundException e) {
-                    Log.e(TAG, "Imagen no encontrada");
-                }
+                return;
             }
+            c.moveToFirst();
+            long tid = c.getLong(1);
+            String suspect = c.getString(0);
+            mCrime.setSuspect(suspect);
+            suspectButton.setText(suspect);
+            String photoUri = c.getString(1);
+            c.close();
+            try {
+                InputStream is = getActivity().getContentResolver().openInputStream(Uri.parse(photoUri));
+                Bitmap b = BitmapFactory.decodeStream(is);
+                BitmapDrawable bd = new BitmapDrawable(getActivity().getResources(), b);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                    suspectButton.setBackground(bd);
+            } catch (FileNotFoundException e) {
+                Log.e(TAG, "Imagen no encontrada");
+            }
+            mCallbacks.onCrimeUpdated(mCrime);
         }
+
 
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -413,8 +438,10 @@ public class CrimeFragment extends Fragment {
 
     @Override
     public void onPause() {
+        Log.d(TAG,"onPause");
         super.onPause();
         CrimeLab.getInstance(getActivity()).saveCrimes();
+        Log.d(TAG,"return onPause");
     }
 
     @Override
@@ -459,14 +486,19 @@ public class CrimeFragment extends Fragment {
     /**
      * Muestra la foto en el ImageView thel thubmnail
      */
+    private static int showPhotocnt=0;
     private void showPhoto() {
+        showPhotocnt++;
+        Log.d(TAG,"showPhotoCount: "+showPhotocnt);
         Photo p = mCrime.getPhoto();
         BitmapDrawable b = null;
         if (p != null) {
             String path = getActivity().getFileStreamPath(p.getFilename()).getAbsolutePath();
             b = PictureUtils.getScaledDrawable(getActivity(), path);
         }
+
         mPhotoThumbnailView.setImageDrawable(b);
+        Log.d(TAG,"showPhoto setDrawable");
     }
 
     private String getCrimeReport() {
@@ -486,6 +518,13 @@ public class CrimeFragment extends Fragment {
         String report = getString(R.string.crime_report, mCrime.getTitle(), dateString, solvedString, suspect);
         return report;
 
+    }
+
+    /**
+     * Interfaz que debe implementar la actividad que contenga este fragmento
+     */
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
     }
 
 }
