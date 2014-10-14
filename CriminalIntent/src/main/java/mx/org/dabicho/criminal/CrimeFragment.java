@@ -1,6 +1,7 @@
 package mx.org.dabicho.criminal;
 
 import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -69,9 +70,21 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_DATE = "date";
     private static final String DIALOG_TIME = "time";
     private static final String DIALOG_IMAGE = "image";
+    /**
+     * Identificador para reconocer la solicitud de una configuración de fecha
+     */
     private static final int REQUEST_DATE = 0;
+    /**
+     * Identificador para reconocer la solicitud de una configuración de hora
+     */
     private static final int REQUEST_TIME = 1;
+    /**
+     * Identificador para reconocer la solicitud de una foto
+     */
     private static final int REQUEST_PHOTO = 2;
+    /**
+     * Identificación para reconocer la solicitud de un sospechoso de los contactos
+     */
     private static final int REQUEST_CONTACT = 3;
     private Callbacks mCallbacks;
     private Crime mCrime;
@@ -146,6 +159,8 @@ public class CrimeFragment extends Fragment {
         // implementa el API de HONEYCOMB o superior
         //
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && getActivity().getActionBar() != null) {
+            // El botón de home de la aplicación regresa un nivel en lugar de ir al inicio
+            // de la aplicación
 
             if (NavUtils.getParentActivityName(getActivity()) != null)
                 getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -259,6 +274,8 @@ public class CrimeFragment extends Fragment {
                     i.setType("text/plain");
                     i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
                     i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+                    //Inicializa un selector de actividad, para ignorar el default
+                    i=Intent.createChooser(i,getString(R.string.send_report));
                     startActivity(i);
                 }
             });
@@ -419,6 +436,9 @@ public class CrimeFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            /*
+            Este caso es para el botón de hacia arriba, o regresar
+             */
             case android.R.id.home:
                 // los intent pueden tener banderas
                 // Esta busca una actividad del mismo tipo y remueve todas lasposteriores para dejar
@@ -430,6 +450,10 @@ public class CrimeFragment extends Fragment {
                  */
                 if (NavUtils.getParentActivityName(getActivity()) != null)
                     NavUtils.navigateUpFromSameTask(getActivity());
+                return true;
+            case R.id.menu_item_delete_crime_photo:
+                CrimeLab.getInstance(getActivity()).deleteCrimePhoto(mCrime);
+                PictureUtils.cleanImageView(mPhotoThumbnailView);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

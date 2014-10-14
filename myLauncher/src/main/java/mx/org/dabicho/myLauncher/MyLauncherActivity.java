@@ -3,21 +3,24 @@ package mx.org.dabicho.myLauncher;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class LauncherActivity extends SingleSupportFragmentActivity {
-
+public class MyLauncherActivity extends SingleSupportFragmentActivity {
+    private static final String TAG="MyLauncherActivity";
     @Override
     protected Fragment createFragment() {
+        Log.d(TAG, "createFragment");
         return new MyLauncherFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_launcher);
+        Log.d(TAG,"onCreate");
+
     }
 
 
