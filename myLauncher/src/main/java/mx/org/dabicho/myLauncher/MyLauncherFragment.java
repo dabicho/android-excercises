@@ -11,9 +11,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+
+import org.w3c.dom.Text;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,14 +51,22 @@ public class MyLauncherFragment extends ListFragment {
             }
         });
         ArrayAdapter<ResolveInfo> lAdapter=new ArrayAdapter<ResolveInfo>(getActivity(),android.R.layout.simple_list_item_1,activities){
+
             @Override
            public View getView(int pos, View convertView, ViewGroup parent) {
+                if(convertView==null)
+                    convertView=getActivity().getLayoutInflater().inflate(R.layout.list_application_item,parent,false);
                PackageManager lPackageManager=getActivity().getPackageManager();
-               View v = super.getView(pos, convertView, parent);
-                TextView lTextView=(TextView)v;
+
+
+                TextView lTextView=(TextView)convertView.findViewById(R.id.application_item_textView);
+
                 ResolveInfo ri=getItem(pos);
                 lTextView.setText(ri.loadLabel(pm));
-                return v;
+                ImageView lImageView=(ImageView)convertView.findViewById(R.id.application_item_iconView);
+
+                lImageView.setImageDrawable(ri.loadIcon(lPackageManager));
+                return convertView;
 
            }
         };
