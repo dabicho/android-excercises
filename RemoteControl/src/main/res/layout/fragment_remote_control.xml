@@ -11,16 +11,21 @@
         android:layout_weight="2"
         android:gravity="center"
         android:text="0"
-        android:textSize="50dp"/>
+        android:textSize="50dp"
+        android:background="@drawable/window_patch"
+        android:textColor="#ffffff"/>
     <TextView
         android:id="@+id/fragment_remote_control_workingTextView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_margin="15dp"
-        android:background="#555555"
         android:gravity="center"
         android:textSize="20dp"
+        android:background="@drawable/bar_patch"
+        android:textColor="#000000"
+        android:textStyle="italic"
+        android:text="0"
         />
     <include android:layout_weight="1"
              android:layout_height="0dp"
