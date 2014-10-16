@@ -8,5 +8,5 @@
         android:startColor="#f4f4e9"
         android:type="radial">
 
-        </gradient>
+    </gradient>
 </shape>
