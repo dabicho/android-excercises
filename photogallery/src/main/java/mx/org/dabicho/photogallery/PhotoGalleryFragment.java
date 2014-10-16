@@ -59,7 +59,7 @@ public class PhotoGalleryFragment extends Fragment {
                 setUpAdapter();
             }else {
                 mItems.addAll(galleryItems);
-                
+                ((ArrayAdapter)mGridView.getAdapter()).notifyDataSetChanged();
             }
 
         }

@@ -29,7 +29,7 @@ public class FlickrFetcher {
     private static final String PARAM_EXTRAS = "extras";
     private static final String EXTRA_SMALL_URL = "url_s";
     private static final String PARAM_PAGE="page";
-    private static Integer currentPate=1;
+    private static Integer currentPage =1;
     /**
      * El nombre del elemento en el XML devuelto por flickr
      */
@@ -65,7 +65,7 @@ public class FlickrFetcher {
             String url = Uri.parse(ENDPOINT).buildUpon().appendQueryParameter("method", METHOD_GET_RECENT)
                     .appendQueryParameter("api_key", API_KEY)
                     .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
-                    .appendQueryParameter(PARAM_PAGE,currentPate.toString())
+                    .appendQueryParameter(PARAM_PAGE, currentPage.toString())
                     .build().toString();
 
             String xmlString = getUrl(url);
@@ -74,7 +74,7 @@ public class FlickrFetcher {
             XmlPullParser lParser = lFactory.newPullParser();
             lParser.setInput(new StringReader(xmlString));
             parseItems(items,lParser);
-            currentPate++;
+            currentPage++;
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
         } catch (XmlPullParserException xppe) {
@@ -103,5 +103,9 @@ public class FlickrFetcher {
             eventType = parser.next();
         }
 
+    }
+
+    void resetPageCount(){
+        currentPage =0;
     }
 }
