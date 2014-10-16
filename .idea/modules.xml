@@ -9,6 +9,8 @@
       <module fileurl="file://$PROJECT_DIR$/android-excercises.iml" filepath="$PROJECT_DIR$/android-excercises.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/myLauncher/myLauncher.iml" filepath="$PROJECT_DIR$/myLauncher/myLauncher.iml" />
+      <module fileurl="file://$PROJECT_DIR$/photogallery/photogallery.iml" filepath="$PROJECT_DIR$/photogallery/photogallery.iml" />
+      <module fileurl="file://$PROJECT_DIR$/photogalleryn/photogalleryn.iml" filepath="$PROJECT_DIR$/photogalleryn/photogalleryn.iml" />
     </modules>
   </component>
 </project>
