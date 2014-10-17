@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,12 +22,15 @@ import mx.org.dabicho.photogallery.model.GalleryItem;
  */
 public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
+
+    private int lastPageSize = 0;
+
     GridView mGridView;
     ArrayList<GalleryItem> mItems;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         new FetchItemsTask().execute();
@@ -34,7 +38,7 @@ public class PhotoGalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
+
         View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mGridView = (GridView) v.findViewById(R.id.gridView);
 
@@ -54,40 +58,51 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<GalleryItem> galleryItems) {
-            if(mItems==null ) {
+            lastPageSize = galleryItems.size();
+            if (mItems == null) {
                 mItems = galleryItems;
                 setUpAdapter();
-            }else {
+            } else {
                 mItems.addAll(galleryItems);
-                ((ArrayAdapter)mGridView.getAdapter()).notifyDataSetChanged();
+                ((ArrayAdapter) mGridView.getAdapter()).notifyDataSetChanged();
             }
 
         }
     }
 
     void setUpAdapter() {
-        Log.d(TAG,"setUpAdapter");
+
         if (getActivity() == null || mGridView == null) {
             return;
         }
-        Log.d(TAG,"setUpAdapter Activity and GridView ready");
+
         if (mItems != null) {
-            Log.d(TAG,"setUpAdapter Items ready");
-            mGridView.setAdapter(new ArrayAdapter<GalleryItem>(getActivity(), android.R.layout.simple_gallery_item, mItems){
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    if(mItems.size()-position==40){
-                        // Iniciar otra tarea para tomar más y agregarlos a la lista
-                        new FetchItemsTask().execute();
-                    }
-                    return super.getView(position, convertView, parent);
-                }
-            });
+
+            mGridView.setAdapter(new GalleryItemAdapter(mItems));
+
         } else {
-            Log.d(TAG,"setUpAdapter No Items");
+
             mGridView.setAdapter(null);
         }
 
 
     }
+
+    private class GalleryItemAdapter extends ArrayAdapter<GalleryItem> {
+        public GalleryItemAdapter(ArrayList<GalleryItem> items) {
+            super(getActivity(), 0, items);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getActivity().getLayoutInflater().inflate(R.layout.gallery_item, parent, false);
+            }
+            ImageView imageView=(ImageView)convertView.findViewById(R.id.gallery_item_imageView);
+            imageView.setImageResource(R.drawable.brian_up_close);
+
+            return convertView;
+        }
+    }
+
 }
