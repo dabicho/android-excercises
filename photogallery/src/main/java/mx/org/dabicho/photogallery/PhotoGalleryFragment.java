@@ -1,7 +1,9 @@
 package mx.org.dabicho.photogallery;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,6 +25,7 @@ import mx.org.dabicho.photogallery.model.GalleryItem;
 public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
 
+    private ThumbnailDownloader<ImageView> mViewThumbnailDownloader;
     private int lastPageSize = 0;
 
     GridView mGridView;
@@ -33,6 +36,18 @@ public class PhotoGalleryFragment extends Fragment {
 
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        mViewThumbnailDownloader=new ThumbnailDownloader<ImageView>(new Handler());
+        mViewThumbnailDownloader.setListener(new ThumbnailDownloader.Listener<ImageView>(){
+
+            @Override
+            public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {
+                if(isVisible())
+                    imageView.setImageBitmap(thumbnail);
+            }
+        });
+        mViewThumbnailDownloader.start();
+        mViewThumbnailDownloader.getLooper();
+        Log.i(TAG,"ThumbnailDownloader thread started");
         new FetchItemsTask().execute();
     }
 
@@ -45,6 +60,20 @@ public class PhotoGalleryFragment extends Fragment {
         setUpAdapter();
 
         return v;
+    }
+
+    @Override
+    public void onDestroyView() {
+        mViewThumbnailDownloader.clearQueue();
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mViewThumbnailDownloader.quit();
+        Log.i(TAG, "Background thumbnailDownloader thread destroyed");
     }
 
     private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
@@ -100,7 +129,8 @@ public class PhotoGalleryFragment extends Fragment {
             }
             ImageView imageView=(ImageView)convertView.findViewById(R.id.gallery_item_imageView);
             imageView.setImageResource(R.drawable.brian_up_close);
-
+            GalleryItem lItem=getItem(position);
+            mViewThumbnailDownloader.queueThumbnail(imageView, lItem.getUrl());
             return convertView;
         }
     }
