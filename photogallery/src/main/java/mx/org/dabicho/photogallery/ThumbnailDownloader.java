@@ -13,7 +13,9 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Hilo que descarga las imágenes bajo demanda
@@ -21,8 +23,10 @@ import java.util.Map;
 public class ThumbnailDownloader<Token> extends HandlerThread {
     private static final String TAG = "ThumbnailDownloader";
     private static final int MESSAGE_DOWNLOAD = 0;
+    private static final int MESSAGE_PRELOAD_CACHE=1;
 
-    LruCache<String,Bitmap> mCache;
+    public static final String PRELOAD_CACHE_URL="org.mx.dabicho.thumbnailUrl";
+
 
     Handler mHandler;
     Handler mResponseHandler;
@@ -30,34 +34,59 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
     Map<Token, String> requestMap = Collections.synchronizedMap(new HashMap<Token, String>());
 
     Listener<Token> mListener;
-    public interface Listener<Token>{
+
+    public interface Listener<Token> {
         void onThumbnailDownloaded(Token token, Bitmap thumbnail);
     }
 
     public void setListener(Listener<Token> listener) {
-        mListener=listener;
+        mListener = listener;
     }
 
     public ThumbnailDownloader(Handler responseHandler) {
         super(TAG);
-        mResponseHandler=responseHandler;
-        mCache=new LruCache<String,Bitmap>(150);
+        mResponseHandler = responseHandler;
+
     }
 
     @Override
     protected void onLooperPrepared() {
-        mHandler=new Handler(){
+        mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                if(msg.what==MESSAGE_DOWNLOAD){
+                if (msg.what == MESSAGE_DOWNLOAD) {
 
-                    Token token=(Token)msg.obj;
-                    Log.i(TAG,"Got a request for url: "+requestMap.get(token));
+                    Token token = (Token) msg.obj;
+                    Log.i(TAG, "Got a request for url: " + requestMap.get(token));
                     handleRequest(token);
+                } else if(msg.what == MESSAGE_PRELOAD_CACHE) {
+                    String url =(String) msg.obj;
+                    if(url!=null && BitmapCacheManager.getInstance().get(url)==null) {
+                        Log.i(TAG, "Got a request to cache: " + url);
+                        handleCacheRequest(url);
+                    } else
+                        Log.i(TAG, "Got a request to cache: "+url+" already present");
                 }
             }
         };
         super.onLooperPrepared();
+    }
+
+    private void handleCacheRequest(String url){
+
+            try {
+                final byte[] bitmapBytes;
+                final Bitmap lBitmap;
+
+                bitmapBytes = new FlickrFetcher().getUrlBytes(url);
+                lBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+
+
+                BitmapCacheManager.getInstance().put(url, lBitmap);
+            } catch (IOException ioe) {
+                Log.e(TAG, "Error downloading image", ioe);
+            }
+
     }
 
     private void handleRequest(final Token token) {
@@ -67,23 +96,24 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 return;
             final byte[] bitmapBytes;
             final Bitmap lBitmap;
-            if(mCache.get(url)==null) {
-                bitmapBytes = new FlickrFetcher().getUrlBytes(url);
+
+            bitmapBytes = new FlickrFetcher().getUrlBytes(url);
 
 
-                lBitmap= BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-                mCache.put(url,lBitmap);
-                Log.i(TAG, "Bitmap created");
-            } else {
-                lBitmap=mCache.get(url);
-            }
+            lBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+
+
+            BitmapCacheManager.getInstance().put(url, lBitmap);
+            Log.i(TAG, "Bitmap created");
+
 
             mResponseHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(requestMap.get(token)!=url){
+                    if (requestMap.get(token) != url) {
                         return;
-                    } requestMap.remove(token);
+                    }
+                    requestMap.remove(token);
                     mListener.onThumbnailDownloaded(token, lBitmap);
                 }
             });
@@ -93,14 +123,23 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
         }
     }
 
+    public void queuePreloadCache(String url) {
+        Log.i(TAG,"Got a request for pre-cache: "+url);
+        if (!mHandler.hasMessages(MESSAGE_PRELOAD_CACHE, url))
+            mHandler.obtainMessage(MESSAGE_PRELOAD_CACHE, url).sendToTarget();
+    }
+
     public void queueThumbnail(Token token, String url) {
         Log.i(TAG, "Got an URL: " + url);
         requestMap.put(token, url);
-        mHandler.obtainMessage(MESSAGE_DOWNLOAD, token).sendToTarget();
+        if (!mHandler.hasMessages(MESSAGE_DOWNLOAD, token)) {
+            Message message=mHandler.obtainMessage(MESSAGE_DOWNLOAD, token);
+            mHandler.sendMessageAtFrontOfQueue(message);
+        }
 
     }
 
-    public void clearQueue(){
+    public void clearQueue() {
         mHandler.removeMessages(MESSAGE_DOWNLOAD);
         requestMap.clear();
     }
