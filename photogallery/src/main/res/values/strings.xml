@@ -4,5 +4,7 @@
     <string name="app_name">Photo Gallery</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+    <string name="search_hint">Buscar en Flickr</string>
+    <string name="search">Buscar</string>
+    <string name="clear_search">Limpiar búsqueda</string>
 </resources>

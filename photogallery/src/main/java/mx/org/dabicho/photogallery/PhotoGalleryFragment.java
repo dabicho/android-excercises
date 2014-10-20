@@ -9,6 +9,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -39,6 +42,7 @@ public class PhotoGalleryFragment extends Fragment {
 
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
         mViewThumbnailDownloader = new ThumbnailDownloader<ImageView>(new Handler());
         mViewThumbnailDownloader.setListener(new ThumbnailDownloader.Listener<ImageView>() {
 
@@ -80,12 +84,36 @@ public class PhotoGalleryFragment extends Fragment {
         Log.i(TAG, "Background thumbnailDownloader thread destroyed");
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_photo_gallery,menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_item_search:
+                getActivity().onSearchRequested();
+                return true;
+            case R.id.menu_item_clear:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
     private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
 
         @Override
         protected ArrayList<GalleryItem> doInBackground(Void... params) {
-
-            return new FlickrFetcher().fetchItems();
+            String query="android";
+            if(query!=null){
+                return new FlickrFetcher().search(query);
+            } else {
+                return new FlickrFetcher().fetchItems();
+            }
 
         }
 
