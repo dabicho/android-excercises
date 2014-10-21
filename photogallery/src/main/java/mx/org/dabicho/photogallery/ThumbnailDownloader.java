@@ -62,10 +62,10 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 } else if(msg.what == MESSAGE_PRELOAD_CACHE) {
                     String url =(String) msg.obj;
                     if(url!=null && BitmapCacheManager.getInstance().get(url)==null) {
-                        Log.i(TAG, "Got a request to cache: " + url);
+                        Log.i(TAG, "Got a request to pre-cache: ");
                         handleCacheRequest(url);
                     } else
-                        Log.i(TAG, "Got a request to cache: "+url+" already present");
+                        Log.i(TAG, "Got a request to pre-cache: already present");
                 }
             }
         };
@@ -104,8 +104,6 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
 
 
             BitmapCacheManager.getInstance().put(url, lBitmap);
-            Log.i(TAG, "Bitmap created");
-
 
             mResponseHandler.post(new Runnable() {
                 @Override
@@ -124,13 +122,13 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
     }
 
     public void queuePreloadCache(String url) {
-        Log.i(TAG,"Got a request for pre-cache: "+url);
+        //Log.i(TAG,"Got a request for pre-cache: ");
         if (!mHandler.hasMessages(MESSAGE_PRELOAD_CACHE, url))
             mHandler.obtainMessage(MESSAGE_PRELOAD_CACHE, url).sendToTarget();
     }
 
     public void queueThumbnail(Token token, String url) {
-        Log.i(TAG, "Got an URL: " + url);
+        //Log.i(TAG, "Got an URL: " + url);
         requestMap.put(token, url);
         if (!mHandler.hasMessages(MESSAGE_DOWNLOAD, token)) {
             Message message=mHandler.obtainMessage(MESSAGE_DOWNLOAD, token);

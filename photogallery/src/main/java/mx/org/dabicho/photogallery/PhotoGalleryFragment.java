@@ -1,9 +1,17 @@
 package mx.org.dabicho.photogallery;
 
+import android.app.Activity;
+import android.app.SearchManager;
+import android.app.SearchableInfo;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.LruCache;
@@ -17,9 +25,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.SearchView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.prefs.PreferenceChangeEvent;
 
 import mx.org.dabicho.photogallery.model.GalleryItem;
 
@@ -28,13 +39,16 @@ import mx.org.dabicho.photogallery.model.GalleryItem;
  */
 public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
-    private static final int MINIMUM_REMAINING_IMAGES=30;
+    private static final int MINIMUM_REMAINING_IMAGES = 30;
 
     private ThumbnailDownloader<ImageView> mViewThumbnailDownloader;
     private int lastPageSize = 0;
 
 
     GridView mGridView;
+    /**
+     * La lista de elementos (imágenes) a mostrar
+     */
     ArrayList<GalleryItem> mItems;
 
     @Override
@@ -56,7 +70,11 @@ public class PhotoGalleryFragment extends Fragment {
         mViewThumbnailDownloader.getLooper();
 
         Log.i(TAG, "ThumbnailDownloader thread started");
-        new FetchItemsTask().execute();
+        clear();
+        updateItems();
+
+        Intent i = new Intent(getActivity(),PollService.class);
+        getActivity().startService(i);
     }
 
     @Override
@@ -87,16 +105,52 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.fragment_photo_gallery,menu);
+        inflater.inflate(R.menu.fragment_photo_gallery, menu);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            String previousSearch = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString(FlickrFetcher.PREF_SEARCH_QUERY, "");
+            MenuItem searchItem = menu.findItem(R.id.menu_item_search);
+            final SearchView lSearchView = (SearchView) searchItem.getActionView();
+
+            SearchManager lSearchManager = (SearchManager) getActivity()
+                    .getSystemService(Context.SEARCH_SERVICE);
+            ComponentName name = getActivity().getComponentName();
+            SearchableInfo lSearchableInfo = lSearchManager.getSearchableInfo(name);
+            lSearchView.setSearchableInfo(lSearchableInfo);
+            lSearchView.setSubmitButtonEnabled(true);
+            lSearchView.setIconified(true);
+            lSearchView.setQuery(previousSearch, false);
+
+
+
+            lSearchView.setOnCloseListener(new SearchView.OnCloseListener() {
+                @Override
+                public boolean onClose() {
+                    String previousSearch = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString(FlickrFetcher.PREF_SEARCH_QUERY, "");
+                    lSearchView.setQuery(previousSearch, false);
+                    return false;
+                }
+            });
+
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.menu_item_search:
+
+                clear();
                 getActivity().onSearchRequested();
                 return true;
             case R.id.menu_item_clear:
+                clear();
+                PreferenceManager.getDefaultSharedPreferences(getActivity())
+                        .edit()
+                        .putString(FlickrFetcher.PREF_SEARCH_QUERY, null)
+                        .commit();
+
+                updateItems();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -104,13 +158,28 @@ public class PhotoGalleryFragment extends Fragment {
 
     }
 
-    private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
+    public void clear() {
+        if (mItems != null)
+            mItems.clear();
+        FlickrFetcher.resetPageCount();
+    }
 
+
+    private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
+         private String toastMessage=null;
         @Override
         protected ArrayList<GalleryItem> doInBackground(Void... params) {
-            String query="android";
-            if(query!=null){
-                return new FlickrFetcher().search(query);
+            Activity lActivity = getActivity();
+
+            if (lActivity == null)
+                return new ArrayList<GalleryItem>();
+            String query = PreferenceManager.getDefaultSharedPreferences(lActivity)
+                    .getString(FlickrFetcher.PREF_SEARCH_QUERY, null);
+
+            if (query != null) {
+                FlickrResult lResult=new FlickrFetcher().search(query);
+                toastMessage=lResult.getItemsFound()+" images found for \""+query+"\".";
+                return lResult.getItems();
             } else {
                 return new FlickrFetcher().fetchItems();
             }
@@ -121,6 +190,7 @@ public class PhotoGalleryFragment extends Fragment {
         protected void onPostExecute(ArrayList<GalleryItem> galleryItems) {
             lastPageSize = galleryItems.size();
             if (mItems == null) {
+                Toast.makeText(getActivity(),toastMessage, Toast.LENGTH_SHORT).show();
                 mItems = galleryItems;
                 setUpAdapter();
             } else {
@@ -129,6 +199,11 @@ public class PhotoGalleryFragment extends Fragment {
             }
 
         }
+    }
+
+
+    void updateItems() {
+        new FetchItemsTask().execute();
     }
 
     void setUpAdapter() {
@@ -156,15 +231,18 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+
+            Log.i(TAG, "Askign for view " + position);
+
             if (convertView == null) {
                 convertView = getActivity().getLayoutInflater().inflate(R.layout.gallery_item, parent, false);
             }
 
             ImageView imageView = (ImageView) convertView.findViewById(R.id.gallery_item_imageView);
-            if(MINIMUM_REMAINING_IMAGES==mItems.size()-position)
-                new FetchItemsTask().execute();
+            if (MINIMUM_REMAINING_IMAGES == mItems.size() - position)
+                updateItems();
             GalleryItem lItem = getItem(position);
-            if(lItem.getUrl()==null)
+            if (lItem.getUrl() == null)
                 return convertView;
             if (BitmapCacheManager.getInstance().get(lItem.getUrl()) == null) {
                 imageView.setImageResource(R.drawable.brian_up_close);
@@ -172,11 +250,11 @@ public class PhotoGalleryFragment extends Fragment {
             } else {
                 imageView.setImageBitmap(BitmapCacheManager.getInstance().get(lItem.getUrl()));
             }
-            int limit= getCount()>=position+19?position+19:getCount()-1;
-            for(int i=position+1; i<limit; i++) {
+            int limit = getCount() >= position + 19 ? position + 19 : getCount() - 1;
+            for (int i = position + 1; i < limit; i++) {
 
 
-                if(getItem(i).getUrl()==null)
+                if (getItem(i).getUrl() == null)
                     continue;
 
                 mViewThumbnailDownloader.queuePreloadCache(getItem(i).getUrl());
