@@ -5,7 +5,7 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,9 +27,7 @@ import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.prefs.PreferenceChangeEvent;
 
 import mx.org.dabicho.photogallery.model.GalleryItem;
 
@@ -70,11 +67,9 @@ public class PhotoGalleryFragment extends Fragment {
         mViewThumbnailDownloader.getLooper();
 
         Log.i(TAG, "ThumbnailDownloader thread started");
-        clear();
+        clearItemsList();
         updateItems();
 
-        Intent i = new Intent(getActivity(),PollService.class);
-        getActivity().startService(i);
     }
 
     @Override
@@ -140,11 +135,11 @@ public class PhotoGalleryFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.menu_item_search:
 
-                clear();
+                clearItemsList();
                 getActivity().onSearchRequested();
                 return true;
             case R.id.menu_item_clear:
-                clear();
+                clearItemsList();
                 PreferenceManager.getDefaultSharedPreferences(getActivity())
                         .edit()
                         .putString(FlickrFetcher.PREF_SEARCH_QUERY, null)
@@ -152,13 +147,35 @@ public class PhotoGalleryFragment extends Fragment {
 
                 updateItems();
                 return true;
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(),shouldStartAlarm);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    getActivity().invalidateOptionsMenu();
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
     }
 
-    public void clear() {
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+        MenuItem toggleItem=menu.findItem(R.id.menu_item_toggle_polling);
+
+        if(PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+            toggleItem.setIcon(android.R.drawable.button_onoff_indicator_on);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+            toggleItem.setIcon(android.R.drawable.button_onoff_indicator_off);
+        }
+    }
+
+    public void clearItemsList() {
         if (mItems != null)
             mItems.clear();
         FlickrFetcher.resetPageCount();
@@ -189,7 +206,14 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<GalleryItem> galleryItems) {
             lastPageSize = galleryItems.size();
+
             if (mItems == null) {
+
+                    SharedPreferences lPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, galleryItems.get(0).getId())
+                            .commit();
+
+
                 Toast.makeText(getActivity(),toastMessage, Toast.LENGTH_SHORT).show();
                 mItems = galleryItems;
                 setUpAdapter();

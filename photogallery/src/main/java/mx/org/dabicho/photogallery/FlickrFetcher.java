@@ -32,6 +32,7 @@ public class FlickrFetcher {
     private static final String EXTRA_SMALL_URL = "url_s";
     private static final String PARAM_PAGE = "page";
     private static final String PARAM_TEXT = "text";
+    private static final String PARAM_SORT = "sort";
 
     public static final String PREF_SEARCH_QUERY = "searchQuery";
     public static final String PREF_LAST_RESULT_ID="lastResultId";
@@ -85,17 +86,23 @@ public class FlickrFetcher {
      */
     public FlickrResult downloadGalleryItems(String url) {
         FlickrResult lFlickrResult=new FlickrResult();
+        currentPage++;
+        return downloadGalleryItems(url, currentPage);
+    }
+
+    public FlickrResult downloadGalleryItems(String url, int currentPage) {
+        FlickrResult lFlickrResult=new FlickrResult();
 
         try {
 
 
             String xmlString = getUrl(url);
-            
+
             XmlPullParserFactory lFactory = XmlPullParserFactory.newInstance();
             XmlPullParser lParser = lFactory.newPullParser();
             lParser.setInput(new StringReader(xmlString));
             parseItems(lFlickrResult, lParser);
-            currentPage++;
+
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items for " + url, ioe);
         } catch (XmlPullParserException xppe) {
@@ -114,8 +121,19 @@ public class FlickrFetcher {
                 .appendQueryParameter("api_key", API_KEY)
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                 .appendQueryParameter(PARAM_PAGE, currentPage.toString())
+                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
                 .build().toString();
         return downloadGalleryItems(url).getItems();
+    }
+
+    public ArrayList<GalleryItem> fetchItems(int page) {
+        String url = Uri.parse(ENDPOINT).buildUpon().appendQueryParameter("method", METHOD_GET_RECENT)
+                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
+                .appendQueryParameter(PARAM_PAGE, currentPage.toString())
+                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .build().toString();
+        return downloadGalleryItems(url,page).getItems();
     }
 
     /**
@@ -130,8 +148,20 @@ public class FlickrFetcher {
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                 .appendQueryParameter(PARAM_PAGE, currentPage.toString())
                 .appendQueryParameter(PARAM_TEXT, query)
+                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
                 .build().toString();
         return downloadGalleryItems(url);
+    }
+
+    public FlickrResult search(String query, int page) {
+        String url = Uri.parse(ENDPOINT).buildUpon().appendQueryParameter("method", METHOD_SEARCH)
+                .appendQueryParameter("api_key", API_KEY)
+                .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
+                .appendQueryParameter(PARAM_PAGE, currentPage.toString())
+                .appendQueryParameter(PARAM_TEXT, query)
+                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .build().toString();
+        return downloadGalleryItems(url,page);
     }
 
     void parseItems(FlickrResult flickrResult, XmlPullParser parser)
