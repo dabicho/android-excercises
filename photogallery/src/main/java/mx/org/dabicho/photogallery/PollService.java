@@ -19,12 +19,14 @@ import java.util.ArrayList;
 import mx.org.dabicho.photogallery.model.GalleryItem;
 
 /**
- * Created by dabicho on 10/21/14.
+ * Servicio de intent para verificar existencia de nuevos resultados
  */
 public class PollService extends IntentService {
 
     private static final String TAG = "PollService";
-    private static final int POLL_INTERVAL = 1000 * 15;
+    private static final int POLL_INTERVAL = 1000 * 60 * 15; // Cada 15 minutos
+
+    public static final String PREF_IS_ALARM_ON="isAlarmOn";
 
     public PollService() {
         super(TAG);
@@ -71,7 +73,7 @@ public class PollService extends IntentService {
         }
 
         lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID,resultId)
-                .commit();
+                .apply();
 
         Log.i(TAG, "Received an intent: " + intent);
     }
@@ -88,6 +90,10 @@ public class PollService extends IntentService {
             alarmManager.cancel(pi);
             pi.cancel();
         }
+
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().putBoolean(PollService.PREF_IS_ALARM_ON,isOn)
+                .commit();
     }
 
     public static boolean isServiceAlarmOn(Context context){

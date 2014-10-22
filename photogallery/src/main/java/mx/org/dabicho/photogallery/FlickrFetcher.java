@@ -21,7 +21,7 @@ import mx.org.dabicho.photogallery.model.GalleryItem;
 /**
  * Clase encargada de interactuar con flickr
  */
-public class FlickrFetcher {
+class FlickrFetcher {
     private static final String TAG = "FlickrFetcher";
 
     private static final String ENDPOINT = "https://api.flickr.com/services/rest/";
@@ -35,7 +35,7 @@ public class FlickrFetcher {
     private static final String PARAM_SORT = "sort";
 
     public static final String PREF_SEARCH_QUERY = "searchQuery";
-    public static final String PREF_LAST_RESULT_ID="lastResultId";
+    public static final String PREF_LAST_RESULT_ID = "lastResultId";
 
     private static Integer currentPage = 1;
     /**
@@ -47,6 +47,13 @@ public class FlickrFetcher {
      */
     private static final String XML_PHOTOS = "photos";
 
+    /**
+     * Obtiene el documento urlSpec como un arreglo de bytes
+     *
+     * @param urlSpec
+     * @return
+     * @throws IOException
+     */
     byte[] getUrlBytes(String urlSpec) throws IOException {
         URL lURL = new URL(urlSpec);
         HttpURLConnection lConnection = (HttpURLConnection) lURL.openConnection();
@@ -74,24 +81,19 @@ public class FlickrFetcher {
      * @return
      * @throws IOException
      */
-    public String getUrl(String urlSpec) throws IOException {
+    String getUrl(String urlSpec) throws IOException {
         return new String(getUrlBytes(urlSpec));
     }
 
     /**
-     * Obtiene la lista de GalleryItem que descarga del url
+     * Obtiene la lista de GalleryItem que descarga del url junto a sus metadatos
+     * para la página actual
      *
      * @param url
      * @return
      */
-    public FlickrResult downloadGalleryItems(String url) {
-        FlickrResult lFlickrResult=new FlickrResult();
-        currentPage++;
-        return downloadGalleryItems(url, currentPage);
-    }
-
-    public FlickrResult downloadGalleryItems(String url, int currentPage) {
-        FlickrResult lFlickrResult=new FlickrResult();
+    FlickrResult downloadGalleryItems(String url) {
+        FlickrResult lFlickrResult = new FlickrResult();
 
         try {
 
@@ -108,8 +110,11 @@ public class FlickrFetcher {
         } catch (XmlPullParserException xppe) {
             Log.e(TAG, "Failed to parse items", xppe);
         }
+
         return lFlickrResult;
     }
+
+
 
     /**
      * Obtiene los GalleryItem recientes de la página actual
@@ -121,19 +126,27 @@ public class FlickrFetcher {
                 .appendQueryParameter("api_key", API_KEY)
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                 .appendQueryParameter(PARAM_PAGE, currentPage.toString())
-                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .appendQueryParameter(PARAM_SORT, "date-posted-desc")
                 .build().toString();
-        return downloadGalleryItems(url).getItems();
+        FlickrResult lFlickrResult= downloadGalleryItems(url);
+        if (currentPage <= lFlickrResult.getPages())
+            currentPage++;
+        return lFlickrResult.getItems();
     }
 
+    /**
+     * Obtiene los GalleryItem recientes de la página dada
+     *
+     * @return
+     */
     public ArrayList<GalleryItem> fetchItems(int page) {
         String url = Uri.parse(ENDPOINT).buildUpon().appendQueryParameter("method", METHOD_GET_RECENT)
                 .appendQueryParameter("api_key", API_KEY)
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
-                .appendQueryParameter(PARAM_PAGE, currentPage.toString())
-                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .appendQueryParameter(PARAM_PAGE, String.valueOf(page))
+                .appendQueryParameter(PARAM_SORT, "date-posted-desc")
                 .build().toString();
-        return downloadGalleryItems(url,page).getItems();
+        return downloadGalleryItems(url).getItems();
     }
 
     /**
@@ -148,32 +161,53 @@ public class FlickrFetcher {
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                 .appendQueryParameter(PARAM_PAGE, currentPage.toString())
                 .appendQueryParameter(PARAM_TEXT, query)
-                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .appendQueryParameter(PARAM_SORT, "date-posted-desc")
                 .build().toString();
-        return downloadGalleryItems(url);
+        FlickrResult lFlickrResult= downloadGalleryItems(url);
+        if (currentPage <= lFlickrResult.getPages())
+            currentPage++;
+        return lFlickrResult;
     }
 
+    /**
+     * Obtiene los gallery items de la búsqueda de la página dada
+     *
+     * @param query
+     * @return
+     */
     public FlickrResult search(String query, int page) {
         String url = Uri.parse(ENDPOINT).buildUpon().appendQueryParameter("method", METHOD_SEARCH)
                 .appendQueryParameter("api_key", API_KEY)
                 .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
-                .appendQueryParameter(PARAM_PAGE, currentPage.toString())
+                .appendQueryParameter(PARAM_PAGE, String.valueOf(page))
                 .appendQueryParameter(PARAM_TEXT, query)
-                .appendQueryParameter(PARAM_SORT,"date-posted-desc")
+                .appendQueryParameter(PARAM_SORT, "date-posted-desc")
                 .build().toString();
-        return downloadGalleryItems(url,page);
+        return downloadGalleryItems(url);
     }
 
+    /**
+     * Revisa los elementos del parser para llenar el resultado de la búsqueda de flickr
+     *
+     * @param flickrResult
+     * @param parser
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
     void parseItems(FlickrResult flickrResult, XmlPullParser parser)
             throws XmlPullParserException, IOException {
         int eventType = parser.next();
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            if(eventType == XmlPullParser.START_TAG &&
-                    XML_PHOTOS.equals(parser.getName()))
-            {
-                flickrResult.setItemsFound(Long.parseLong(parser.getAttributeValue(null,"total")));
-            }else if (eventType == XmlPullParser.START_TAG &&
+            if (eventType == XmlPullParser.START_TAG &&
+                    XML_PHOTOS.equals(parser.getName())) {
+                Log.i(TAG, "Total de páginas: " + parser.getAttributeValue(null, "pages"));
+                Log.i(TAG, "Elementos por página: " + parser.getAttributeValue(null, "per_page"));
+                Log.i(TAG, "Página actual: " + parser.getAttributeValue(null, "page"));
+                Log.i(TAG, "Total de imágenes: " + parser.getAttributeValue(null, "total"));
+                flickrResult.setItemsFound(Long.parseLong(parser.getAttributeValue(null, "total")));
+                flickrResult.setPages(Integer.parseInt(parser.getAttributeValue(null, "pages")));
+            } else if (eventType == XmlPullParser.START_TAG &&
                     XML_PHOTO.equals(parser.getName())) {
                 String id = parser.getAttributeValue(null, "id");
                 String caption = parser.getAttributeValue(null, "title");
@@ -187,25 +221,30 @@ public class FlickrFetcher {
             }
             eventType = parser.next();
         }
+        Log.i(TAG, "Elementos cargados: " + flickrResult.getItems().size());
 
     }
 
+    /**
+     * Reinicia la página actual a 0
+     */
     public static void resetPageCount() {
-        currentPage = 0;
+        currentPage = 1;
     }
 }
 
 class FlickrResult {
-    private long mItemsFound=0;
+    private long mItemsFound = 0;
     private ArrayList<GalleryItem> mItems;
+    private int mPages;
 
-    public FlickrResult(){
-        mItemsFound=0;
-        mItems=new ArrayList<GalleryItem>();
+    public FlickrResult() {
+        mItemsFound = 0;
+        mItems = new ArrayList<GalleryItem>();
     }
 
     void setItemsFound(long found) {
-        mItemsFound=found;
+        mItemsFound = found;
     }
 
 
@@ -219,5 +258,13 @@ class FlickrResult {
 
     public void add(GalleryItem item) {
         mItems.add(item);
+    }
+
+    public void setPages(int pages) {
+        mPages = pages;
+    }
+
+    public int getPages() {
+        return mPages;
     }
 }

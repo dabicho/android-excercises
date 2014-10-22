@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,7 +40,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final int MINIMUM_REMAINING_IMAGES = 30;
 
     private ThumbnailDownloader<ImageView> mViewThumbnailDownloader;
-    private int lastPageSize = 0;
+
 
 
     GridView mGridView;
@@ -117,7 +118,6 @@ public class PhotoGalleryFragment extends Fragment {
             lSearchView.setQuery(previousSearch, false);
 
 
-
             lSearchView.setOnCloseListener(new SearchView.OnCloseListener() {
                 @Override
                 public boolean onClose() {
@@ -149,8 +149,8 @@ public class PhotoGalleryFragment extends Fragment {
                 return true;
             case R.id.menu_item_toggle_polling:
                 boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
-                PollService.setServiceAlarm(getActivity(),shouldStartAlarm);
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     getActivity().invalidateOptionsMenu();
                 }
                 return true;
@@ -164,9 +164,9 @@ public class PhotoGalleryFragment extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 
-        MenuItem toggleItem=menu.findItem(R.id.menu_item_toggle_polling);
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
 
-        if(PollService.isServiceAlarmOn(getActivity())) {
+        if (PollService.isServiceAlarmOn(getActivity())) {
             toggleItem.setTitle(R.string.stop_polling);
             toggleItem.setIcon(android.R.drawable.button_onoff_indicator_on);
         } else {
@@ -181,9 +181,12 @@ public class PhotoGalleryFragment extends Fragment {
         FlickrFetcher.resetPageCount();
     }
 
-
+    /**
+     * Tarea asíncrona para descargar los datos de imágenes de la galería
+     */
     private class FetchItemsTask extends AsyncTask<Void, Void, ArrayList<GalleryItem>> {
-         private String toastMessage=null;
+        private String toastMessage = null;
+
         @Override
         protected ArrayList<GalleryItem> doInBackground(Void... params) {
             Activity lActivity = getActivity();
@@ -194,8 +197,8 @@ public class PhotoGalleryFragment extends Fragment {
                     .getString(FlickrFetcher.PREF_SEARCH_QUERY, null);
 
             if (query != null) {
-                FlickrResult lResult=new FlickrFetcher().search(query);
-                toastMessage=lResult.getItemsFound()+" images found for \""+query+"\".";
+                FlickrResult lResult = new FlickrFetcher().search(query);
+                toastMessage = lResult.getItemsFound() + " images found for \"" + query + "\".";
                 return lResult.getItems();
             } else {
                 return new FlickrFetcher().fetchItems();
@@ -205,20 +208,24 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<GalleryItem> galleryItems) {
-            lastPageSize = galleryItems.size();
-
-            if (mItems == null) {
-
-                    SharedPreferences lPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                    lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, galleryItems.get(0).getId())
-                            .commit();
 
 
-                Toast.makeText(getActivity(),toastMessage, Toast.LENGTH_SHORT).show();
+            if (mItems == null || mItems.isEmpty()) {
+
+                SharedPreferences lPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, galleryItems.get(0).getId()).apply();
+
+
+                Toast.makeText(getActivity(), toastMessage, Toast.LENGTH_SHORT).show();
+                //if(mItems==null)
                 mItems = galleryItems;
+                //else
+                //    mItems.addAll(galleryItems);
                 setUpAdapter();
+                Log.i(TAG,"Elementos totales: "+mItems.size());
             } else {
                 mItems.addAll(galleryItems);
+                Log.i(TAG,"Elementos totales: "+mItems.size());
                 ((ArrayAdapter) mGridView.getAdapter()).notifyDataSetChanged();
             }
 
@@ -230,6 +237,9 @@ public class PhotoGalleryFragment extends Fragment {
         new FetchItemsTask().execute();
     }
 
+    /**
+     * Configura los datos que respaldan al gridview
+     */
     void setUpAdapter() {
 
         if (getActivity() == null || mGridView == null) {
@@ -256,7 +266,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            Log.i(TAG, "Askign for view " + position);
+            Log.d(TAG, "Asking for view " + position);
 
             if (convertView == null) {
                 convertView = getActivity().getLayoutInflater().inflate(R.layout.gallery_item, parent, false);

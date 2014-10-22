@@ -57,21 +57,25 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 if (msg.what == MESSAGE_DOWNLOAD) {
 
                     Token token = (Token) msg.obj;
-                    Log.i(TAG, "Got a request for url: " + requestMap.get(token));
+                    Log.d(TAG, "Got a request for url: " + requestMap.get(token));
                     handleRequest(token);
                 } else if(msg.what == MESSAGE_PRELOAD_CACHE) {
                     String url =(String) msg.obj;
                     if(url!=null && BitmapCacheManager.getInstance().get(url)==null) {
-                        Log.i(TAG, "Got a request to pre-cache: ");
+                        Log.d(TAG, "Got a request to pre-cache: ");
                         handleCacheRequest(url);
                     } else
-                        Log.i(TAG, "Got a request to pre-cache: already present");
+                        Log.d(TAG, "Got a request to pre-cache: already present");
                 }
             }
         };
         super.onLooperPrepared();
     }
 
+    /**
+     * Maneja una petición para agregar un url al cache. Menor prioridad que handleRequest
+     * @param url
+     */
     private void handleCacheRequest(String url){
 
             try {
@@ -89,6 +93,12 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
 
     }
 
+
+    /**
+     * Maneja una petición para descargar una imagen. El token se utiliza para actualizar datos con
+     * la interfaz y referenciar el token con el url en un mapa
+     * @param token
+     */
     private void handleRequest(final Token token) {
         try {
             final String url = requestMap.get(token);
@@ -121,12 +131,21 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
         }
     }
 
+    /**
+     * Encolar una solicitud para agregar un url al cache
+     * @param url
+     */
     public void queuePreloadCache(String url) {
         //Log.i(TAG,"Got a request for pre-cache: ");
         if (!mHandler.hasMessages(MESSAGE_PRELOAD_CACHE, url))
             mHandler.obtainMessage(MESSAGE_PRELOAD_CACHE, url).sendToTarget();
     }
 
+    /**
+     * Encolar una solicitud para procesar un url y un token
+     * @param token
+     * @param url
+     */
     public void queueThumbnail(Token token, String url) {
         //Log.i(TAG, "Got an URL: " + url);
         requestMap.put(token, url);
@@ -137,6 +156,9 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
 
     }
 
+    /**
+     * Limpia la cola de mensajes y el mapeo de peticiones
+     */
     public void clearQueue() {
         mHandler.removeMessages(MESSAGE_DOWNLOAD);
         requestMap.clear();
