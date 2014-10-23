@@ -89,8 +89,8 @@ public class PhotoGalleryFragment extends VisibleSupportFragment {
                 GalleryItem lItem = mItems.get(position);
                 Uri photoPageUri=Uri.parse(lItem.getPhotoPageUrl());
 
-                Intent i = new Intent(Intent.ACTION_VIEW, photoPageUri);
-
+                Intent i = new Intent(getActivity(), PhotoPageActivity.class);
+                i.setData(photoPageUri);
                 startActivity(i);
 
             }
