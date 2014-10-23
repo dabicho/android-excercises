@@ -54,9 +54,10 @@ class FlickrFetcher {
      * @return
      * @throws IOException
      */
-    byte[] getUrlBytes(String urlSpec) throws IOException {
+    byte[] getUrlBytes(String urlSpec,boolean withCache) throws IOException {
         URL lURL = new URL(urlSpec);
         HttpURLConnection lConnection = (HttpURLConnection) lURL.openConnection();
+        lConnection.setUseCaches(withCache);
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = lConnection.getInputStream();
@@ -82,7 +83,7 @@ class FlickrFetcher {
      * @throws IOException
      */
     String getUrl(String urlSpec) throws IOException {
-        return new String(getUrlBytes(urlSpec));
+        return new String(getUrlBytes(urlSpec, false));
     }
 
     /**

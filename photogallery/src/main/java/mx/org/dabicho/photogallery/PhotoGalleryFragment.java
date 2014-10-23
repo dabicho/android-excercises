@@ -7,14 +7,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,6 +29,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import mx.org.dabicho.photogallery.model.GalleryItem;
+import mx.org.dabicho.photogallery.services.BitmapCacheManager;
 
 /**
  * Fragmento principal de la galer+ía
@@ -282,6 +281,7 @@ public class PhotoGalleryFragment extends VisibleSupportFragment {
                 imageView.setImageResource(R.drawable.brian_up_close);
                 mViewThumbnailDownloader.queueThumbnail(imageView, lItem.getUrl());
             } else {
+                mViewThumbnailDownloader.dequeueThumbnail(imageView);
                 imageView.setImageBitmap(BitmapCacheManager.getInstance().get(lItem.getUrl()));
             }
             int limit = getCount() >= position + 19 ? position + 19 : getCount() - 1;

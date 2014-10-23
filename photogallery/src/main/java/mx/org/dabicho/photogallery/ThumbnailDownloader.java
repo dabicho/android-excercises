@@ -7,15 +7,14 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import mx.org.dabicho.photogallery.services.BitmapCacheManager;
 
 /**
  * Hilo que descarga las imágenes bajo demanda
@@ -82,7 +81,7 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
                 final byte[] bitmapBytes;
                 final Bitmap lBitmap;
 
-                bitmapBytes = new FlickrFetcher().getUrlBytes(url);
+                bitmapBytes = new FlickrFetcher().getUrlBytes(url,true);
                 lBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
 
 
@@ -107,7 +106,7 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
             final byte[] bitmapBytes;
             final Bitmap lBitmap;
 
-            bitmapBytes = new FlickrFetcher().getUrlBytes(url);
+            bitmapBytes = new FlickrFetcher().getUrlBytes(url,true);
 
 
             lBitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
@@ -154,6 +153,10 @@ public class ThumbnailDownloader<Token> extends HandlerThread {
             mHandler.sendMessageAtFrontOfQueue(message);
         }
 
+    }
+
+    public void dequeueThumbnail(Token token) {
+        requestMap.remove(token);
     }
 
     /**
