@@ -25,8 +25,11 @@ public class PollService extends IntentService {
 
     private static final String TAG = "PollService";
     private static final int POLL_INTERVAL = 1000 * 60 * 15; // Cada 15 minutos
+    public static final String PERM_PRIVATE="mx.org.dabicho.photogallery.PRIVATE";
 
-    public static final String PREF_IS_ALARM_ON="isAlarmOn";
+    public static final String PREF_IS_ALARM_ON = "isAlarmOn";
+
+    public static final String ACTION_SHOW_NOTIFICATION = "mx.org.dabicho.photogallery.SHOW_NOTIFICATION";
 
     public PollService() {
         super(TAG);
@@ -43,22 +46,22 @@ public class PollService extends IntentService {
 
         SharedPreferences lPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String query = lPreferences.getString(FlickrFetcher.PREF_SEARCH_QUERY, null);
-        String lastResultId = lPreferences.getString(FlickrFetcher.PREF_LAST_RESULT_ID,null);
+        String lastResultId = lPreferences.getString(FlickrFetcher.PREF_LAST_RESULT_ID, null);
         ArrayList<GalleryItem> lItems;
         if (query != null) {
-            lItems = new FlickrFetcher().search(query,0).getItems();
+            lItems = new FlickrFetcher().search(query, 0).getItems();
         } else {
             lItems = new FlickrFetcher().fetchItems(0);
 
         }
         if (lItems.size() == 0)
             return;
-        String resultId=lItems.get(0).getId();
-        if(!resultId.equals(lastResultId)) {
+        String resultId = lItems.get(0).getId();
+        if (!resultId.equals(lastResultId)) {
             Log.i(TAG, "Got a new result: " + resultId);
             Resources r = getResources();
             PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this,
-                    PhotoGalleryActivity.class),0);
+                    PhotoGalleryActivity.class), 0);
             Notification notification = new NotificationCompat.Builder(this)
                     .setTicker(r.getString(R.string.new_pictures_text))
                     .setSmallIcon(android.R.drawable.ic_menu_report_image)
@@ -66,40 +69,41 @@ public class PollService extends IntentService {
                     .setContentText(r.getString(R.string.new_pictures_text))
                     .setContentIntent(pi)
                     .setAutoCancel(true).build();
-            NotificationManager notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(0,notification);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.notify(0, notification);
+            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION),PERM_PRIVATE);
         } else {
-            Log.i(TAG, "Got an old result: "+resultId);
+            Log.i(TAG, "Got an old result: " + resultId);
         }
 
-        lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID,resultId)
+        lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, resultId)
                 .apply();
 
         Log.i(TAG, "Received an intent: " + intent);
     }
 
-    public static void setServiceAlarm(Context context, boolean isOn){
+    public static void setServiceAlarm(Context context, boolean isOn) {
         Intent i = new Intent(context, PollService.class);
-        PendingIntent pi = PendingIntent.getService(context,0,i,0);
+        PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
 
-        AlarmManager alarmManager=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        if(isOn) {
-            alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), POLL_INTERVAL,pi);
+        if (isOn) {
+            alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), POLL_INTERVAL, pi);
         } else {
             alarmManager.cancel(pi);
             pi.cancel();
         }
 
         PreferenceManager.getDefaultSharedPreferences(context)
-                .edit().putBoolean(PollService.PREF_IS_ALARM_ON,isOn)
+                .edit().putBoolean(PollService.PREF_IS_ALARM_ON, isOn)
                 .commit();
     }
 
-    public static boolean isServiceAlarmOn(Context context){
+    public static boolean isServiceAlarmOn(Context context) {
         Intent i = new Intent(context, PollService.class);
 
-        PendingIntent pi = PendingIntent.getService(context,0,i,PendingIntent.FLAG_NO_CREATE);
-        return pi!=null;
+        PendingIntent pi = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
+        return pi != null;
     }
 }

@@ -18,13 +18,12 @@ public class StartupReceiver extends BroadcastReceiver {
     private static final String TAG = "StartupReceiver";
 
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
-        i(TAG, "onReceive: "+intent.getAction());
-        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
+        i(TAG, "onReceive: " + intent.getAction());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        boolean isOn=prefs.getBoolean(PollService.PREF_IS_ALARM_ON,false);
-        PollService.setServiceAlarm(context,isOn);
+        boolean isOn = prefs.getBoolean(PollService.PREF_IS_ALARM_ON, false);
+        PollService.setServiceAlarm(context, isOn);
     }
 }

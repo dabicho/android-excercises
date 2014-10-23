@@ -35,7 +35,7 @@ import mx.org.dabicho.photogallery.model.GalleryItem;
 /**
  * Fragmento principal de la galer+ía
  */
-public class PhotoGalleryFragment extends Fragment {
+public class PhotoGalleryFragment extends VisibleSupportFragment {
     private static final String TAG = "PhotoGalleryFragment";
     private static final int MINIMUM_REMAINING_IMAGES = 30;
 
