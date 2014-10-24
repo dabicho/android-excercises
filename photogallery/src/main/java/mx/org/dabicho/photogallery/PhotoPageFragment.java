@@ -29,7 +29,7 @@ public class PhotoPageFragment extends VisibleSupportFragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        mUrl=getActivity().getIntent().getDataString().toString();
+        mUrl=getActivity().getIntent().getDataString();
 
     }
 

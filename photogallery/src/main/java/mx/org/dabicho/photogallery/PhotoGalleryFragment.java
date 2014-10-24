@@ -228,7 +228,10 @@ public class PhotoGalleryFragment extends VisibleSupportFragment {
             if (mItems == null || mItems.isEmpty()) {
 
                 SharedPreferences lPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                if(galleryItems.size()>0)
                 lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, galleryItems.get(0).getId()).apply();
+                else
+                    lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, "").apply();
 
 
                 Toast.makeText(getActivity(), toastMessage, Toast.LENGTH_SHORT).show();
