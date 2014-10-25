@@ -50,13 +50,16 @@ public class PollService extends IntentService {
         String lastResultId = lPreferences.getString(FlickrFetcher.PREF_LAST_RESULT_ID, null);
         ArrayList<GalleryItem> lItems;
         if (query != null) {
-            lItems = new FlickrFetcher().search(query, 0).getItems();
+            lItems = new FlickrFetcher().search(query, 1).getItems();
         } else {
-            lItems = new FlickrFetcher().fetchItems(0);
+            lItems = new FlickrFetcher().fetchItems(1);
 
         }
-        if (lItems.size() == 0)
+        if (lItems.size() == 0) {
+            lPreferences.edit().putString(FlickrFetcher.PREF_LAST_RESULT_ID, "")
+                    .apply();
             return;
+        }
         String resultId = lItems.get(0).getId();
         if (!resultId.equals(lastResultId)) {
             Log.i(TAG, "Got a new result: " + resultId);
@@ -82,6 +85,12 @@ public class PollService extends IntentService {
         Log.i(TAG, "Received an intent: " + intent);
     }
 
+    /**
+     * Configura una alarma para lanzar un intent a PollService cada cantidad
+     * fija de segundos
+     * @param context
+     * @param isOn
+     */
     public static void setServiceAlarm(Context context, boolean isOn) {
         Intent i = new Intent(context, PollService.class);
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
