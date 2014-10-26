@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "mx.org.dabicho.runtracker"
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion 20
         versionCode 1
         versionName "1.0"
