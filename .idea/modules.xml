@@ -12,6 +12,7 @@
       <module fileurl="file://$PROJECT_DIR$/myLauncher/myLauncher.iml" filepath="$PROJECT_DIR$/myLauncher/myLauncher.iml" />
       <module fileurl="file://$PROJECT_DIR$/photogallery/photogallery.iml" filepath="$PROJECT_DIR$/photogallery/photogallery.iml" />
       <module fileurl="file://$PROJECT_DIR$/photogalleryn/photogalleryn.iml" filepath="$PROJECT_DIR$/photogalleryn/photogalleryn.iml" />
+      <module fileurl="file://$PROJECT_DIR$/runtracker/runtracker.iml" filepath="$PROJECT_DIR$/runtracker/runtracker.iml" />
     </modules>
   </component>
 </project>

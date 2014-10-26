@@ -1,0 +1,59 @@
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RunTrackerActivity">
+
+    <TableRow>
+        <TextView
+            android:text="@string/started"
+            android:textAlignment="viewEnd"
+            android:layout_gravity="end"/>
+        <TextView android:id="@+id/run_startedTextView"/>
+    </TableRow>
+    <TableRow>
+        <TextView
+            android:text="@string/altitude"
+            android:textAlignment="viewEnd"
+            android:layout_gravity="end"/>
+        <TextView android:id="@+id/run_latitudeTextView"/>
+    </TableRow>
+    <TableRow>
+        <TextView
+            android:text="@string/longitude"
+            android:textAlignment="viewEnd"
+            android:layout_gravity="end"/>
+        <TextView android:id="@+id/run_longitudeTextView"/>
+    </TableRow>
+    <TableRow>
+        <TextView
+            android:text="@string/altitude"
+            android:textAlignment="viewEnd"
+            android:layout_gravity="end" />
+        <TextView android:id="@+id/run_altitudeTextView"/>
+    </TableRow>
+    <TableRow>
+        <TextView
+            android:text="@string/elapsed_time"
+            android:paddingTop="16dp"
+            android:textAlignment="viewEnd"
+            android:layout_gravity="end"/>
+        <TextView android:id="@+id/run_durationTextView"
+            android:paddingTop="16dp"/>
+    </TableRow>
+    <LinearLayout>
+        <Button
+            android:id="@+id/run_startButton"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/start"/>
+        <Button
+            android:id="@+id/run_stopButton"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/stop"/>
+    </LinearLayout>
+
+</TableLayout>

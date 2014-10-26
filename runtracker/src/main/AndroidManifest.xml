@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="mx.org.dabicho.runtracker" >
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature android:required="true" android:name="android.hardware.location.gps"/>
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <!-- Para poder usar google api -->
+        <meta-data android:name="com.google.android.gms.values"
+            android:value="@integer/google_play_services_version"/>
+        <activity
+            android:name="mx.org.dabicho.runtracker.RunTrackerActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver android:name=".LocationReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="mx.org.dabicho.runtracker.ACTION_LOCATION"/>
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
