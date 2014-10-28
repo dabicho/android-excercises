@@ -8,6 +8,8 @@ import android.graphics.Color;
 
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,31 +26,24 @@ import mx.org.dabicho.runtracker.model.Run;
 /**
  * Fragmento para presentar una lista con las corridas
  */
-public class RunListFragment extends ListFragment {
+public class RunListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "RunListFragment";
     private static final int REQUEST_NEW_RUN = 0;
-    private RunDatabaseHelper.RunCursor mCursor;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mCursor = RunManager.getInstance(getActivity()).queryRuns();
-
-        RunCursorAdapter adapter = new RunCursorAdapter(getActivity(), mCursor);
-        setListAdapter(adapter);
+        getLoaderManager().initLoader(0, null, this);
     }
 
-    @Override
-    public void onDestroy() {
-        mCursor.close();
-        super.onDestroy();
-    }
 
     @Override
     public void onResume() {
         super.onResume();
-        ((RunCursorAdapter)getListAdapter()).notifyDataSetChanged();
+        if (getListAdapter() != null)
+            ((RunCursorAdapter) getListAdapter()).notifyDataSetChanged();
     }
 
     @Override
@@ -71,9 +66,8 @@ public class RunListFragment extends ListFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(REQUEST_NEW_RUN==requestCode) {
-            mCursor.requery();
-            ((RunCursorAdapter)getListAdapter()).notifyDataSetChanged();
+        if (REQUEST_NEW_RUN == requestCode) {
+            getLoaderManager().restartLoader(0, null, this);
         }
 
 
@@ -87,6 +81,22 @@ public class RunListFragment extends ListFragment {
         i.putExtra(RunTrackerActivity.EXTRA_RUN_ID, id);
         startActivity(i);
         super.onListItemClick(l, v, position, id);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        return new RunListCursorLoader(getActivity());
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        RunCursorAdapter adapter = new RunCursorAdapter(getActivity(), (RunDatabaseHelper.RunCursor) cursor);
+        setListAdapter(adapter);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        setListAdapter(null);
     }
 
     private static class RunCursorAdapter extends CursorAdapter {
@@ -109,9 +119,9 @@ public class RunListFragment extends ListFragment {
             Run run = mRunCursor.getRun();
             TextView startDateTextView = (TextView) view;
             String cellText = context.getString(R.string.cell_text, run.getStartDate());
-            if(RunManager.getInstance(context).isTrackingRun(run)){
+            if (RunManager.getInstance(context).isTrackingRun(run)) {
                 startDateTextView.setBackgroundColor(Color.CYAN);
-                startDateTextView.setTextAppearance(context,R.style.Tracking);
+                startDateTextView.setTextAppearance(context, R.style.Tracking);
             } else {
                 startDateTextView.setBackgroundColor(Color.BLACK);
                 startDateTextView.setTextAppearance(context, R.style.NotTracking);
@@ -119,4 +129,20 @@ public class RunListFragment extends ListFragment {
             startDateTextView.setText(cellText);
         }
     }
+
+    private static class RunListCursorLoader extends SQLiteCursorLoader {
+
+        public RunListCursorLoader(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected Cursor loadCursor() {
+            return RunManager.getInstance(getContext()).queryRuns();
+        }
+    }
+
+
+
+
 }

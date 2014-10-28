@@ -15,14 +15,15 @@ import android.util.Log;
 import mx.org.dabicho.runtracker.model.Run;
 
 import static android.util.Log.e;
+import static android.util.Log.i;
 
 /**
- * Created by dabicho on 25/10/14.
+ * Administrador de datos
  */
 public class RunManager {
     private static final String TAG = "RunManager";
 
-    private static final int NOTIFICACION_RASTREO_ID=0;
+    private static final int NOTIFICACION_RASTREO_ID = 0;
 
     private static final String PREFS_FILE = "runs";
     private static final String PREF_CURRENT_RUN_ID = "RunManager.current";
@@ -72,18 +73,23 @@ public class RunManager {
 
         PendingIntent pi = getLocationPendingIntent(true);
 
-        mLocationManager.requestLocationUpdates(provider, 0, 0, pi);
+        mLocationManager.requestLocationUpdates(provider, 1000 * 60 * 3, 6, pi);
 
-        pi = PendingIntent.getActivity(mAppContext, 0, new Intent(mAppContext,
-                RunTrackerActivity.class), 0);
+        Intent runTrackerIntent = new Intent(mAppContext,
+                RunTrackerActivity.class);
+        runTrackerIntent.putExtra(RunTrackerActivity.EXTRA_RUN_ID, mCurrentRunId);
+        i(TAG, "startLocationUpdates: Rastreando " + mCurrentRunId);
+        pi = PendingIntent.getActivity(mAppContext, 0, runTrackerIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
         // TODO Construir el intent para RunTrackerActivity correctamente
-        Notification notification= new NotificationCompat.Builder(mAppContext)
+        Notification notification = new NotificationCompat.Builder(mAppContext)
                 .setTicker(mAppContext.getString(R.string.tracking_message))
                 .setSmallIcon(android.R.drawable.stat_sys_warning)
                 .setContentText(mAppContext.getString(R.string.tracking_message))
-                .setContentIntent(pi).setAutoCancel(false).build();
+                .setContentIntent(pi).setAutoCancel(false).setOngoing(true).build();
 
-        NotificationManager lNotificationManager = (NotificationManager)mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager lNotificationManager = (NotificationManager) mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
         lNotificationManager.notify(NOTIFICACION_RASTREO_ID, notification);
 
 
@@ -95,38 +101,39 @@ public class RunManager {
         mAppContext.sendBroadcast(broadcast);
     }
 
-    public Run startNewRun(){
+    public Run startNewRun() {
         Run run = insertRun();
         startTrackingRun(run);
         return run;
     }
 
-    public void startTrackingRun(Run run){
-        mCurrentRunId=run.getId();
+    public void startTrackingRun(Run run) {
+        mCurrentRunId = run.getId();
         mPreferences.edit().putLong(PREF_CURRENT_RUN_ID, mCurrentRunId).commit();
         startLocationUpdates();
     }
 
-    public void stopRun(){
+    public void stopRun() {
         stopLocationUpdates();
-        mCurrentRunId=-1;
+        mCurrentRunId = -1;
         mPreferences.edit().remove(PREF_CURRENT_RUN_ID).commit();
-        NotificationManager lNotificationManager = (NotificationManager)mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager lNotificationManager = (NotificationManager) mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
         lNotificationManager.cancel(NOTIFICACION_RASTREO_ID);
     }
 
-    private Run insertRun(){
+    private Run insertRun() {
         Run run = new Run();
         run.setId(mHelper.insertRun(run));
         return run;
     }
 
-    public RunDatabaseHelper.RunCursor queryRuns(){
+    public RunDatabaseHelper.RunCursor queryRuns() {
         return mHelper.queryRuns();
     }
 
-    public void insertLocation(Location location){
-        if(mCurrentRunId!=-1){
+    public void insertLocation(Location location) {
+        if (mCurrentRunId != -1) {
             mHelper.insertLocation(mCurrentRunId, location);
         } else {
             e(TAG, "insertLocation: location received with no tracking run: ignoring.");
@@ -150,22 +157,22 @@ public class RunManager {
         Run run = null;
         RunDatabaseHelper.RunCursor cursor = mHelper.queryRun(id);
         cursor.moveToFirst();
-        if(!cursor.isAfterLast())
-            run=cursor.getRun();
+        if (!cursor.isAfterLast())
+            run = cursor.getRun();
         cursor.close();
         return run;
     }
 
-    public boolean isTrackingRun(Run run){
-        return run!=null && run.getId()==mCurrentRunId;
+    public boolean isTrackingRun(Run run) {
+        return run != null && run.getId() == mCurrentRunId;
     }
 
-    public Location getLastLocationForRun(long runId){
+    public Location getLastLocationForRun(long runId) {
         Location location = null;
-        RunDatabaseHelper.LocationCursor cursor=mHelper.queryLastLocationForRun(runId);
+        RunDatabaseHelper.LocationCursor cursor = mHelper.queryLastLocationForRun(runId);
         cursor.moveToFirst();
-        if(!cursor.isAfterLast()) {
-            location=cursor.getLocation();
+        if (!cursor.isAfterLast()) {
+            location = cursor.getLocation();
         }
         cursor.close();
         return location;

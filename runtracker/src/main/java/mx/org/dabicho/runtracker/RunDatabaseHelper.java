@@ -101,7 +101,7 @@ public class RunDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Una clase utilitaria para envolver a un cursor que regresa renglones de la tabla "run".
-     * El método {@link mx.org.dabicho.runtracker.RunDatabaseHelper.RunCursor.getRun} devuelve una instancia de Run que representa el renglón actual.
+     * El método getRun devuelve una instancia de Run que representa el renglón actual.
      */
     public static class RunCursor extends CursorWrapper {
         public RunCursor(Cursor cursor) {
