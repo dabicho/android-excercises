@@ -4,5 +4,12 @@
     <style name="AppTheme" parent="android:Theme.Black">
         <!-- Customize your theme here. -->
     </style>
-
+    <style name="Tracking">
+        <item name="android:colorBackground">@color/wallet_holo_blue_light</item>
+        <item name="android:textStyle">bold|italic</item>
+    </style>
+    <style name="NotTracking" parent="AppTheme">
+        <item name="android:colorBackground">@color/wallet_bright_foreground_holo_dark</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

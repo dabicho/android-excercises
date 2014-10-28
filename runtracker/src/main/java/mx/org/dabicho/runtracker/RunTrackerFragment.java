@@ -14,14 +14,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import javax.xml.datatype.Duration;
-
 import mx.org.dabicho.runtracker.model.Run;
 
 /**
  * Fragmento que define la lista de datos de GPS
  */
 public class RunTrackerFragment extends Fragment {
+    private static final String TAG = "RunTrackerFragment";
+
+    private static final String ARG_RUN_ID = "RUN_ID";
 
     private Button mStartButton, mStopButton;
     private TextView mStartedTextView, mLatitudeTextView,
@@ -32,55 +33,76 @@ public class RunTrackerFragment extends Fragment {
     private RunManager mRunManager;
     private Run mRun;
 
+    public static RunTrackerFragment newInstance(long runId) {
+        Bundle args = new Bundle();
+        args.putLong(ARG_RUN_ID, runId);
+        RunTrackerFragment rf = new RunTrackerFragment();
+        rf.setArguments(args);
+        return rf;
+    }
+
     private BroadcastReceiver mLocationReceiver = new LocationReceiver() {
         @Override
         protected void onLocationReceived(Context context, Location loc) {
-            mLastLocation=loc;
-            if(isVisible())
+            if (!mRunManager.isTrackingRun(mRun))
+                return;
+            mLastLocation = loc;
+            if (isVisible())
                 updateUI();
         }
 
         @Override
         protected void onProviderEnabledChanged(boolean enabled) {
-            int toastText = enabled?R.string.gps_enabled:R.string.gps_disabled;
+            int toastText = enabled ? R.string.gps_enabled : R.string.gps_disabled;
             Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG).show();
         }
     };
-
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mRunManager=RunManager.getInstance(getActivity());
+        mRunManager = RunManager.getInstance(getActivity());
+
+        Bundle args = getArguments();
+        if (args != null) {
+            long runId = args.getLong(ARG_RUN_ID, -1);
+            if (runId != -1) {
+                mRun = mRunManager.getRun(runId);
+                mLastLocation=mRunManager.getLastLocationForRun(runId);
+            }
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.fragment_run_tracker
-        ,container,false);
+        View view = inflater.inflate(R.layout.fragment_run_tracker
+                , container, false);
 
-        mStartedTextView = (TextView)view.findViewById(R.id.run_startedTextView);
-        mLatitudeTextView = (TextView)view.findViewById(R.id.run_latitudeTextView);
-        mLongitudeTextView = (TextView)view.findViewById(R.id.run_longitudeTextView);
-        mAltitudeTextView=(TextView)view.findViewById(R.id.run_altitudeTextView);
-        mDurationTextView=(TextView)view.findViewById(R.id.run_durationTextView);
+        mStartedTextView = (TextView) view.findViewById(R.id.run_startedTextView);
+        mLatitudeTextView = (TextView) view.findViewById(R.id.run_latitudeTextView);
+        mLongitudeTextView = (TextView) view.findViewById(R.id.run_longitudeTextView);
+        mAltitudeTextView = (TextView) view.findViewById(R.id.run_altitudeTextView);
+        mDurationTextView = (TextView) view.findViewById(R.id.run_durationTextView);
 
-        mStartButton=(Button)view.findViewById(R.id.run_startButton);
+        mStartButton = (Button) view.findViewById(R.id.run_startButton);
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRunManager.startLocationUpdates();
-                mRun=new Run();
+                if (mRun == null) {
+                    mRun = mRunManager.startNewRun();
+                } else {
+                    mRunManager.startTrackingRun(mRun);
+                }
                 updateUI();
             }
         });
-        mStopButton=(Button)view.findViewById(R.id.run_stopButton);
+        mStopButton = (Button) view.findViewById(R.id.run_stopButton);
         mStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRunManager.stopLocationUpdates();
+                mRunManager.stopRun();
                 updateUI();
             }
         });
@@ -91,7 +113,7 @@ public class RunTrackerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        getActivity().registerReceiver(mLocationReceiver,new IntentFilter(RunManager.ACTION_LOCATION));
+        getActivity().registerReceiver(mLocationReceiver, new IntentFilter(RunManager.ACTION_LOCATION));
     }
 
     @Override
@@ -101,20 +123,21 @@ public class RunTrackerFragment extends Fragment {
         super.onStop();
     }
 
-    public void updateUI(){
+    public void updateUI() {
+        boolean trackingThisRun = mRunManager.isTrackingRun(mRun);
         boolean started = mRunManager.isTrackingRun();
 
-        if(mRun!=null)
+        if (mRun != null)
             mStartedTextView.setText(mRun.getStartDate().toString());
-        int durationSeconds=0;
-        if(mRun!=null && mLastLocation!=null){
-            durationSeconds=mRun.getDurationSeconds(mLastLocation.getTime());
+        int durationSeconds = 0;
+        if (mRun != null && mLastLocation != null) {
+            durationSeconds = mRun.getDurationSeconds(mLastLocation.getTime());
             mLatitudeTextView.setText(Double.toString(mLastLocation.getLatitude()));
             mLongitudeTextView.setText(Double.toString(mLastLocation.getLongitude()));
             mAltitudeTextView.setText(Double.toString(mLastLocation.getAltitude()));
         }
         mDurationTextView.setText(mRun.formatDuration(durationSeconds));
         mStartButton.setEnabled(!started);
-        mStopButton.setEnabled(started);
+        mStopButton.setEnabled(started && trackingThisRun);
     }
 }

@@ -12,4 +12,6 @@
     <string name="gps_enabled">GPS abilitado</string>
     <string name="gps_disabled">GPS Des-abilitado</string>
     <string name="cell_text">Corrida en %1$s</string>
+    <string name="new_run">Agregar viaje</string>
+    <string name="tracking_message">Servicio de rastreo activo</string>
 </resources>

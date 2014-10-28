@@ -12,7 +12,7 @@
         <meta-data android:name="com.google.android.gms.values"
             android:value="@integer/google_play_services_version"/>
         <activity
-            android:name="mx.org.dabicho.runtracker.RunTrackerActivity"
+            android:name="mx.org.dabicho.runtracker.RunListActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".LocationReceiver" android:exported="false">
+        <activity android:name=".RunTrackerActivity" android:label="@string/app_name"/>
+        <receiver android:name=".TrackingLocationReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="mx.org.dabicho.runtracker.ACTION_LOCATION"/>
             </intent-filter>
