@@ -73,7 +73,7 @@ public class RunManager {
 
         PendingIntent pi = getLocationPendingIntent(true);
 
-        mLocationManager.requestLocationUpdates(provider, 1000 * 60 * 3, 6, pi);
+        mLocationManager.requestLocationUpdates(provider, 1000, 3, pi);
 
         Intent runTrackerIntent = new Intent(mAppContext,
                 RunTrackerActivity.class);
@@ -176,5 +176,9 @@ public class RunManager {
         }
         cursor.close();
         return location;
+    }
+
+    public RunDatabaseHelper.LocationCursor queryLocationsForRun(long runId){
+        return mHelper.queryLocationsForRun(runId);
     }
 }

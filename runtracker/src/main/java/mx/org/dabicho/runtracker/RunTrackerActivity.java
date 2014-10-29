@@ -18,6 +18,7 @@ public class RunTrackerActivity extends SingleSupportFragmentActivity {
     @Override
     protected Fragment createFragment() {
         long runId = getIntent().getLongExtra(EXTRA_RUN_ID, -1);
+        i(TAG, "createFragment: ");
         if (runId != -1) {
             i(TAG, "createFragment: abriendo "+runId);
             return RunTrackerFragment.newInstance(runId);

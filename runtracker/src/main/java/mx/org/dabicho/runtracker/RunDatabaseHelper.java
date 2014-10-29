@@ -8,16 +8,19 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.support.v4.widget.ContentLoadingProgressBar;
+import android.util.Log;
 
 import java.util.Date;
 
 import mx.org.dabicho.runtracker.model.Run;
 
+import static android.util.Log.i;
+
 /**
  * Interfaz con la base de datos para respaldar los datos
  */
 public class RunDatabaseHelper extends SQLiteOpenHelper {
-
+    private static final String TAG = "RunDatabaseHelper";
     private static final String DB_NAME = "runs.sqlite";
     private static final int VERSION = 1;
 
@@ -86,6 +89,11 @@ public class RunDatabaseHelper extends SQLiteOpenHelper {
         return new RunCursor(wrapped);
     }
 
+    /**
+     *
+     * @param runId
+     * @return Un cursor con la última localización de un viaje
+     */
     public LocationCursor queryLastLocationForRun(long runId){
         Cursor wrapped = getReadableDatabase().query(TABLE_LOCATION,
                 null,
@@ -97,6 +105,22 @@ public class RunDatabaseHelper extends SQLiteOpenHelper {
                 "1");
         return new LocationCursor(wrapped);
 
+    }
+
+    /**
+     *
+     * @param runId
+     * @return Un cursor con las localizaciones de un viaje
+     */
+    public LocationCursor queryLocationsForRun(long runId) {
+        Cursor wrappedCursor = getReadableDatabase().query(TABLE_LOCATION, null,
+                COLUMN_LOCATION_RUN_ID+" = ? ",
+                new String[]{String.valueOf(runId)},
+                null,
+                null,
+                COLUMN_LOCATION_TIMESTAMP+" asc ");
+        i(TAG, "queryLocationsForRun: renglones: "+wrappedCursor.getCount());
+        return new LocationCursor(wrappedCursor);
     }
 
     /**
@@ -126,6 +150,11 @@ public class RunDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Una clase utilitaria para envolver a un cursor que regresa renglones de las posiciones de un
+     * viaje. el método {@link mx.org.dabicho.runtracker.RunDatabaseHelper.LocationCursor#getLocation()}
+     * devuelve una instancia de {@link android.location.Location} para el cursor actual
+     */
     public static class LocationCursor extends CursorWrapper{
         public LocationCursor(Cursor c) {
             super(c);
