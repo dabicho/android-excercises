@@ -14,4 +14,9 @@
     <string name="cell_text">Corrida en %1$s</string>
     <string name="new_run">Agregar viaje</string>
     <string name="tracking_message">Servicio de rastreo activo</string>
+    <string name="map">Mapa</string>
+    <string name="run_start">Inicio</string>
+    <string name="run_started_at_format">Viaje inició en %s</string>
+    <string name="run_finish">Fin</string>
+    <string name="run_finished_at_format">Viaje terminó en %s</string>
 </resources>

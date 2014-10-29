@@ -2,6 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="mx.org.dabicho.runtracker" >
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+   <!--requeridos por google maps -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+
+    <!-- Esta propiedad es requerida por maps y bloquea a la apk de mostrarse en google play si
+    no se cumple -->
+    <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
+
+    <permission android:name="mx.org.dabicho.runtracker.permission.MAPS_RECEIVE"
+                android:protectionLevel="signature"/>
+    <uses-permission android:name="mx.org.dabicho.runtracker.permission.MAPS_RECEIVE"/>
+
     <uses-feature android:required="true" android:name="android.hardware.location.gps"/>
     <application
         android:allowBackup="true"
@@ -9,8 +24,10 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <!-- Para poder usar google api -->
-        <meta-data android:name="com.google.android.gms.values"
+        <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
+        <meta-data android:name="com.google.android.maps.v2.API_KEY"
+                   android:value="AIzaSyC50ICZP5o-YssF8BDzEIdbIPq1zB0YRXc" />
         <activity
             android:name="mx.org.dabicho.runtracker.RunListActivity"
             android:label="@string/app_name" >
@@ -21,6 +38,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".RunTrackerActivity" android:label="@string/app_name"/>
+        <activity android:name=".RunMapActivity" android:label="@string/app_name"/>
         <receiver android:name=".TrackingLocationReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="mx.org.dabicho.runtracker.ACTION_LOCATION"/>

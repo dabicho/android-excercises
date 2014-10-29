@@ -2,6 +2,7 @@ package mx.org.dabicho.runtracker;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
@@ -24,10 +25,10 @@ import mx.org.dabicho.runtracker.model.Run;
 public class RunTrackerFragment extends Fragment {
     private static final String TAG = "RunTrackerFragment";
     private static final String ARG_RUN_ID = "RUN_ID";
-    private static final int LOAD_RUN=0;
-    private static final int LOAD_LOCATION=1;
+    private static final int LOAD_RUN = 0;
+    private static final int LOAD_LOCATION = 1;
 
-    private Button mStartButton, mStopButton;
+    private Button mStartButton, mStopButton, mMapButton;
     private TextView mStartedTextView, mLatitudeTextView,
             mLongitudeTextView, mAltitudeTextView,
             mDurationTextView;
@@ -72,7 +73,7 @@ public class RunTrackerFragment extends Fragment {
         if (args != null) {
             long runId = args.getLong(ARG_RUN_ID, -1);
             if (runId != -1) {
-                LoaderManager lm=getLoaderManager();
+                LoaderManager lm = getLoaderManager();
                 lm.initLoader(LOAD_RUN, args, new RunLoaderCallbacks());
                 lm.initLoader(LOAD_LOCATION, args, new LocationLoaderCallbacks());
             }
@@ -110,6 +111,16 @@ public class RunTrackerFragment extends Fragment {
                 updateUI();
             }
         });
+
+        mMapButton = (Button) view.findViewById(R.id.run_mapButton);
+        mMapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getActivity(), RunMapActivity.class);
+                i.putExtra(RunMapActivity.EXTRA_RUN_ID, mRun.getId());
+                startActivity(i);
+            }
+        });
         updateUI();
         return view;
     }
@@ -139,13 +150,15 @@ public class RunTrackerFragment extends Fragment {
             mLatitudeTextView.setText(Double.toString(mLastLocation.getLatitude()));
             mLongitudeTextView.setText(Double.toString(mLastLocation.getLongitude()));
             mAltitudeTextView.setText(Double.toString(mLastLocation.getAltitude()));
-        }
+            mMapButton.setEnabled(true);
+        } else
+            mMapButton.setEnabled(false);
         mDurationTextView.setText(mRun.formatDuration(durationSeconds));
         mStartButton.setEnabled(!started);
         mStopButton.setEnabled(started && trackingThisRun);
     }
 
-    private class RunLoaderCallbacks implements LoaderManager.LoaderCallbacks<Run>{
+    private class RunLoaderCallbacks implements LoaderManager.LoaderCallbacks<Run> {
         @Override
         public Loader<Run> onCreateLoader(int i, Bundle bundle) {
             return new RunLoader(getActivity(), bundle.getLong(ARG_RUN_ID));
@@ -154,7 +167,7 @@ public class RunTrackerFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Run> runLoader, Run run) {
-            mRun=run;
+            mRun = run;
             updateUI();
         }
 
@@ -172,7 +185,7 @@ public class RunTrackerFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Location> locationLoader, Location location) {
-            mLastLocation=location;
+            mLastLocation = location;
             updateUI();
         }
 
